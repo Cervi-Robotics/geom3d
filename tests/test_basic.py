@@ -3,7 +3,7 @@ import typing as tp
 import unittest
 logger = logging.getLogger(__name__)
 
-from geom3d.basic import Vector, Box
+from geom3d import Vector, Box, Line
 
 
 class TestBasic(unittest.TestCase):
@@ -18,6 +18,9 @@ class TestBasic(unittest.TestCase):
         self.assertFalse(box3.collides(box1))
         self.assertFalse(box3.collides(box2))
 
+    def test_line(self):
+        line = Line(Vector(0, 0), Vector(1, 0))
+        self.assertEqual(line.unit_vector, Vector(1, 0))
 
 
 

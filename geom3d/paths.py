@@ -5,7 +5,7 @@ import warnings
 import functools
 import typing as tp
 from satella.coding.sequences import half_product
-from .basic import Box, Vector
+from .basic import Box, Vector, Line
 from .exceptions import ValueWarning
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,23 @@ def must_be_initialized(fun):
 
 
 class Path:
+
+    @classmethod
+    def from_to(cls, source: Vector, destination: Vector, size_or_step: tp.Union[Vector, float]):
+        """
+        Get a path from a point to other point with particular size
+
+        Points will be placed each size/2 if a vector is given, otherwise each size_of_step distance.
+        """
+        points = []
+        if isinstance(size_or_step, Vector):
+            size_or_step = len(Vector) / 2
+
+        for vector in Line(source, destination).pointify(size_or_step):
+            points.append(vector)
+
+        return Path(points)
+
     def __init__(self, elements: tp.List[Box] = None):
         self.size: tp.Optional[Vector] = None
         self.points: tp.List[Vector] = []
