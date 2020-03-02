@@ -16,7 +16,7 @@ Basic structures
 Polygons
 --------
 
-.. autoclass:: geom3d.polygons.Polygon3D
+.. autoclass:: geom3d.polygons.Polygon2D
     :members:
 
 .. autoclass:: geom3d.polygons.PointOnPolygon2D

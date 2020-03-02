@@ -8,6 +8,7 @@ from geom3d.polygons import Polygon2D
 
 logger = logging.getLogger(__name__)
 
+
 class TestPolygon2D(unittest.TestCase):
     def test_point_contains(self):
         poly = Polygon2D([Vector(0, 0, 0), Vector(1, 0, 0), Vector(1, 1, 0)])
@@ -28,6 +29,6 @@ class TestPolygon2D(unittest.TestCase):
     def test_to_path(self):
         poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
         path1 = poly.to_path(0.1, Vector(1, 1))
-        path2 = Path.from_to(Vector(0, 0), Vector(10, 0))
+        path2 = Path.from_to(Vector(0, 0), Vector(10, 0), Vector(1, 1), 0.1)
         intersects = list(path1.get_intersecting_boxes(path2))
         self.assertGreater(len(intersects), 1)

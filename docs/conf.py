@@ -12,17 +12,19 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'geom3d'
-copyright = '2020, Piotr Maślanka'
+copyright = '2020, Cervi Robotics sp. z o. o.'
 author = 'Piotr Maślanka'
 
+from geom3d import __version__
+
 # The full version, including alpha/beta/rc tags
-release = '0.1a1'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,6 +33,7 @@ release = '0.1a1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+'sphinx.ext.autodoc'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
