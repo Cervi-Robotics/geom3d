@@ -10,7 +10,9 @@ install:
   - pip install coverage
   - pip install -r requirements.txt
 script:
-  - python setup.py test
+  - python setup.py test &
+  - sleep 50
+  - kill -2 %1
 after_success:
   - coverage xml
   - ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT

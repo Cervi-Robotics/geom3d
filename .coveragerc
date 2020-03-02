@@ -6,3 +6,4 @@ omit=
   tests/*
   .eggs/*
   setup.py
+  docs/*
