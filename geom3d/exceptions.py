@@ -13,3 +13,7 @@ class GeomWarning(Warning):
 
 class ValueWarning(GeomWarning):
     """Warning about some value of your argument"""
+
+
+class NotReadyError(GeomError):
+    """Something needs to be done before the object can accept this request"""

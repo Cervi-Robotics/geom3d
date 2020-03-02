@@ -1,7 +1,8 @@
 import unittest
 import typing as tp
+
+from geom3d import Path, Vector
 from geom3d.polygons import Polygon2D
-from geom3d.basic import Vector
 
 
 class TestPolygon2D(unittest.TestCase):
@@ -20,3 +21,10 @@ class TestPolygon2D(unittest.TestCase):
         self.assertEqual(point.to_vector(), Vector(5, 0))
         self.assertEqual(point.get_unit_vector_towards_polygon(), Vector(0, 1))
         self.assertEqual(point.get_unit_vector_away_polygon(), Vector(0, -1))
+
+    def test_to_path(self):
+        poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
+        path1 = poly.to_path(0.1, Vector(1, 1))
+        path2 = Path.from_to(Vector(0, 0), Vector(10, 0))
+        intersects = list(path1.get_intersecting_boxes(path2))
+        self.assertGreater(len(intersects), 1)

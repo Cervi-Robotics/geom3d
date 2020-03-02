@@ -28,7 +28,7 @@ class Vector:
     def __sub__(self, other: Vector) -> Vector:
         return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
 
-    def __div__(self, other: float) -> Vector:
+    def __truediv__(self, other: float) -> Vector:
         return Vector(self.x / other, self.y / other, self.z / other)
 
     def __mul__(self, other: float) -> Vector:
@@ -55,6 +55,7 @@ class Vector:
 
     def __str__(self) -> str:
         return f'<{self.x}, {self.y}, {self.z}>'
+
 
 class PointInLine:
     """
@@ -102,7 +103,7 @@ class Line:
     def get_point(self, distance_from_start: float) -> PointInLine:
         return PointInLine(self, distance_from_start)
 
-    def pointify(self, step: float) -> tp.Iterator[Vector]:
+    def get_points_along(self, step: float) -> tp.Iterator[Vector]:
         """
         Return a list of vectors corresponding to equally-spaced points on this line
         """
@@ -163,9 +164,9 @@ class Box(Immutable):
     @classmethod
     def centered_with_size(cls, center: Vector, size: Vector) -> Box:
         """
-        Get a box of a particular size centered at some point
+        Get a box of a particular _size centered at some point
         :param center: center point
-        :param size: size of the box
+        :param size: _size of the box
         """
         start = center - size / 2
         stop = center + size / 2
@@ -178,7 +179,7 @@ class Box(Immutable):
 
     @property
     def size(self) -> Vector:
-        """Return size of this box"""
+        """Return _size of this box"""
         return abs(self.stop - self.start)
 
     def center_at(self, p: Vector) -> Box:

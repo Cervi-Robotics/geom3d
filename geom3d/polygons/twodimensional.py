@@ -7,10 +7,11 @@ import warnings
 
 from satella.coding import precondition
 from satella.coding.sequences import add_next, skip_first
-
-from geom3d.exceptions import ValueWarning
-
 logger = logging.getLogger(__name__)
+
+from .. import Path
+from ..exceptions import ValueWarning
+
 from ..basic import Line, Vector
 
 EPSILON = 0.01
@@ -20,6 +21,15 @@ class Polygon2D:
     """
     A polygon that disregards the z axis
     """
+
+    def to_path(self, step: float, size: Vector) -> Path:
+        """
+        Return a path flying around this polygon
+        :param step: step to which advance the path width
+        :param size: _size
+        :return:
+        """
+        return Path(size, [point for point in self.get_points_along(step)])
 
     @precondition(None, 'len(x) > 1')
     def __init__(self, points: tp.List[Vector]):
@@ -63,6 +73,16 @@ class Polygon2D:
 
     def get_point_on_polygon(self, distance_from_start: float) -> PointOnPolygon2D:
         return PointOnPolygon2D(self, distance_from_start)
+
+    def get_points_along(self, step: float) -> tp.Iterator[Vector]:
+        """
+        Return a list of vectors corresponding to equally-spaced points on this line
+        """
+        pop = self.get_point_on_polygon(0.0)
+        while pop.distance_from_start < self.total_perimeter_length:
+            yield pop.to_vector()
+            pop.advance(step)
+        yield self.points[-1]
 
 
 class PointOnPolygon2D:
@@ -111,7 +131,7 @@ class PointOnPolygon2D:
     def get_unit_vector_towards_polygon(self) -> Vector:
         segment, vec = self._get_segment_and_vector()
         unit_vec = segment.unit_vector
-        point = Vector(unit_vec.y, -unit_vec.x)
+        point = Vector(unit_vec.y, -unit_vec.x)     # construct orthogonal unit vector
 
         epsilon = EPSILON
         while True:
