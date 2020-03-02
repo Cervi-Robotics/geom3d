@@ -3,47 +3,55 @@ from __future__ import annotations
 import logging
 import typing as tp
 from dataclasses import dataclass
+
+import math
 from satella.coding import rethrow_as
 from satella.coding.structures import Immutable
 logger = logging.getLogger(__name__)
 
 
-__all__ = ['Point', 'Box']
+__all__ = ['Vector', 'Box']
 
 
 @dataclass
-class Point:
+class Vector:
     __slots__ = ['x', 'y', 'z']
 
     x: float
     y: float
     z: float
 
-    def __add__(self, other: Point) -> Point:
-        return Point(self.x+other.x, self.y+other.y, self.z+other.z)
+    def __add__(self, other: Vector) -> Vector:
+        return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
 
-    def __sub__(self, other: Point) -> Point:
-        return Point(self.x-other.x, self.y-other.y, self.z-other.z)
+    def __sub__(self, other: Vector) -> Vector:
+        return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
 
-    def __div__(self, other: float) -> Point:
-        return Point(self.x/other, self.y/other, self.z/other)
+    def __div__(self, other: float) -> Vector:
+        return Vector(self.x / other, self.y / other, self.z / other)
 
-    def __mul__(self, other: float) -> Point:
-        return Point(self.x*other, self.y*other, self.z*other)
+    def __mul__(self, other: float) -> Vector:
+        return Vector(self.x * other, self.y * other, self.z * other)
+
+    def __abs__(self) -> Vector:
+        return Vector(abs(self.x), abs(self.y), abs(self.z))
+
+    def __len__(self) -> float:
+        return math.sqrt(math.pow(self.x, 2)+math.pow(self.y, 2)+math.pow(self.z, 2))
 
     @classmethod
-    def zero(cls) -> Point:
+    def zero(cls) -> Vector:
         """Return a (0, 0, 0) point"""
         return ZERO_POINT
 
 
-ZERO_POINT = Point(0, 0, 0)
+ZERO_POINT = Vector(0, 0, 0)
 
 
 class Box(Immutable):
 
     @rethrow_as(AssertionError, ValueError)
-    def __init__(self, start: Point, stop: Point):
+    def __init__(self, start: Vector, stop: Vector):
         assert start.x <= stop.x
         assert start.y <= stop.y
         assert start.z <= stop.z
@@ -75,16 +83,37 @@ class Box(Immutable):
         """
         Return same sized box, but with starting point at (0, 0, 0)
         """
-        return Box(Point.zero(), self.stop-self.start)
+        return Box(Vector.zero(), self.stop - self.start)
 
-    def translate(self, p: Point) -> Box:
+    def translate(self, p: Vector) -> Box:
         """
         Return same box, but translated by given coordinates
         """
         return Box(self.start+p, self.stop+p)
 
-    def center_at(self, p: Point) -> Box:
+    @classmethod
+    def centered_with_size(cls, center: Vector, size: Vector) -> Box:
+        """
+        Get a box of a particular size centered at some point
+        :param center: center point
+        :param size: size of the box
+        """
+        start = center - size / 2
+        stop = center + size / 2
+        return Box(start, stop)
+
+    @property
+    def center(self) -> Vector:
+        """Returns the center of this box"""
+        return (self.stop - self.start) / 2
+
+    @property
+    def size(self) -> Vector:
+        """Return size of this box"""
+        return abs(self.stop - self.start)
+
+    def center_at(self, p: Vector) -> Box:
         """
         Return this box as if centered at point p
         """
-        size = self.stop - self.start
+        return Box.get_centered_with_size(p, self.size)
