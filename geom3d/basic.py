@@ -15,6 +15,7 @@ __all__ = ['Vector', 'Box', 'Line', 'PointInLine']
 
 @dataclass(frozen=True)
 class Vector:
+    """A 3D vector"""
     x: float
     y: float
     z: float = 0.0
@@ -83,6 +84,12 @@ class PointInLine:
 
 @dataclass(frozen=True)
 class Line:
+    """
+    A line in 3D. It starts somewhere and ends somewhere.
+
+    :param start: where does the line start
+    :param stop: where does the line end
+    """
     start: Vector
     stop: Vector
 
@@ -94,18 +101,27 @@ class Line:
 
     @property
     def unit_vector(self) -> Vector:
+        """Return a unit vector corresponding to the direction of this line."""
         return self._unit_vector
 
     @property
     def length(self) -> float:
+        """Return the length of this line"""
         return (self.stop - self.start).length
 
     def get_point(self, distance_from_start: float) -> PointInLine:
+        """
+        Get a point that lies on this line some distance from the start
+
+        :param distance_from_start: the distance from the start
+        """
         return PointInLine(self, distance_from_start)
 
     def get_points_along(self, step: float) -> tp.Iterator[Vector]:
         """
         Return a list of vectors corresponding to equally-spaced points on this line
+
+        :param step: next vector will be distant by exactly this from the previous one
         """
         self_length = self.length
         current_distance = 0.0
@@ -118,17 +134,23 @@ class Line:
 ZERO_POINT = Vector(0, 0, 0)
 
 
+@dataclass(frozen=True)
 class Box(Immutable):
+    """
+    An axis-aligned box that starts at some place and ends at some place.
 
-    @rethrow_as(AssertionError, ValueError)
-    def __init__(self, start: Vector, stop: Vector):
-        assert start.x <= stop.x
-        assert start.y <= stop.y
-        assert start.z <= stop.z
-        self.start = start
-        self.stop = stop
+    It must occur that:
 
-    def collides(self, other: Box):
+    >>> start.x < stop.x and start.y < stop.y and start.z < stop.z
+
+    :param start: beginning of this box
+    :param stop: end of this box
+    """
+    start: Vector
+    stop: Vector
+
+    def collides(self, other: Box) -> bool:
+        """Does this box share at least one point with the other box?"""
         x_cond = self.start.x <= other.start.x <= self.stop.x
         x_cond |= other.start.x <= self.stop.x <= other.stop.x
 
@@ -158,6 +180,8 @@ class Box(Immutable):
     def translate(self, p: Vector) -> Box:
         """
         Return same box, but translated by given coordinates
+
+        :param p: a vector to translate this box over
         """
         return Box(self.start+p, self.stop+p)
 
@@ -179,11 +203,9 @@ class Box(Immutable):
 
     @property
     def size(self) -> Vector:
-        """Return _size of this box"""
+        """Return the size of this box"""
         return abs(self.stop - self.start)
 
     def center_at(self, p: Vector) -> Box:
-        """
-        Return this box as if centered at point p
-        """
+        """Return this box as if centered at point p"""
         return Box.get_centered_with_size(p, self.size)

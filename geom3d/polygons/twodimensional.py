@@ -24,10 +24,10 @@ class Polygon2D:
 
     def to_path(self, step: float, size: Vector) -> Path:
         """
-        Return a path flying around this polygon
-        :param step: step to which advance the path width
-        :param size: _size
-        :return:
+        Return a path flying around the perimeter of this polygon
+
+        :param step: step to which advance the path with
+        :param size: size of the box that will determine the path
         """
         return Path(size, [point for point in self.get_points_along(step)])
 
@@ -43,6 +43,7 @@ class Polygon2D:
             yield Line(point1, point2)
 
     def get_surface_area(self) -> float:
+        """Return the surface area of this polygon"""
         return 0.5 * abs(sum(p0.x * p1.y - p1.x * p0.y
                              for p0, p1 in add_next(self.points, wrap_over=True)))
 
@@ -72,6 +73,11 @@ class Polygon2D:
         return inside
 
     def get_point_on_polygon(self, distance_from_start: float) -> PointOnPolygon2D:
+        """
+        Return a point somewhere on the perimeter of this polygon
+
+        :param distance_from_start: distance from the first point of this polygon
+        """
         return PointOnPolygon2D(self, distance_from_start)
 
     def get_points_along(self, step: float) -> tp.Iterator[Vector]:
@@ -114,15 +120,25 @@ class PointOnPolygon2D:
                 return True
 
     def advance(self, v: float):
-        """Move the pointer v ahead"""
+        """
+        Move the pointer v ahead
+
+        :param v: amount to move the pointer along the perimeter
+        """
         self.distance_from_start += v
         if self.distance_from_start > self.polygon.total_perimeter_length:
             self.distance_from_start = self.distance_from_start % self.polygon.total_perimeter_length
 
     def to_vector(self) -> Vector:
+        """Returns the coordinates of the point on the perimeter"""
         return self._get_segment_and_vector()[1]
 
     def _get_segment_and_vector(self) -> tp.Tuple[Line, Vector]:
+        """
+        Return both the vector (as in :func:`~geom3d.polygons.PointOnPolygon2D.to_vector`) and the
+        segment on which it lies
+        :return: a tuple of (Line - the segment, Vector - coordinates of this point)
+        """
         remaining_distance = self.distance_from_start
         for segment, seg_length in zip(self.polygon.iter_segments(), self.polygon.len_segments):
             if seg_length > remaining_distance:
@@ -131,6 +147,9 @@ class PointOnPolygon2D:
                 remaining_distance -= seg_length
 
     def get_unit_vector_towards_polygon(self) -> Vector:
+        """
+        Get a unit vector, that if applied to self.to_vector() would direct us inside the polygon
+        """
         segment, vec = self._get_segment_and_vector()
         unit_vec = segment.unit_vector
         point = Vector(unit_vec.y, -unit_vec.x)     # construct orthogonal unit vector
@@ -144,4 +163,9 @@ class PointOnPolygon2D:
             epsilon *= 0.1
 
     def get_unit_vector_away_polygon(self) -> Vector:
+        """
+        Return exactly the opposite vector that
+        :func:`~geom3d.polygons.PointOnPolygon2D.get_unit_vector_towards_polygon`
+        would return
+        """
         return -self.get_unit_vector_towards_polygon()
