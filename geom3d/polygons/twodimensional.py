@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import itertools
 import logging
 import typing as tp
 import warnings
 
+from satella.coding import precondition
 from satella.coding.sequences import add_next, skip_first
 
 from geom3d.exceptions import ValueWarning
@@ -19,6 +21,7 @@ class Polygon2D:
     A polygon that disregards the z axis
     """
 
+    @precondition(None, 'len(x) > 1')
     def __init__(self, points: tp.List[Vector]):
         self.points = points
         self.len_segments = [line.length for line in self.iter_segments()]
@@ -66,13 +69,9 @@ class PointOnPolygon2D:
     """
     A point somewhere on the polygons' perimeter
     """
-    def __init__(self, polygon: Polygon2D, distance_from_start: float, epsilon: tp.Optional[float] = None):
-        self.polygon = polygon
 
-        if epsilon is None:
-            self.epsilon = EPSILON
-        else:
-            self.epsilon = epsilon
+    def __init__(self, polygon: Polygon2D, distance_from_start: float):
+        self.polygon = polygon
 
         assert distance_from_start >= 0, "Distance can't be negative!"
 
@@ -81,6 +80,22 @@ class PointOnPolygon2D:
             distance_from_start = distance_from_start % self.polygon.total_perimeter_length
 
         self.distance_from_start = distance_from_start
+
+    def is_on_vertex(self) -> bool:
+        """Does this point occur right on a vertex of the polygon?"""
+        remaining_distance: float = self.distance_from_start
+        for length in itertools.cycle(self.polygon.len_segments):
+            if remaining_distance < length:
+                return False
+            remaining_distance -= length
+            if remaining_distance == 0:
+                return True
+
+    def advance(self, v: float):
+        """Move the pointer v ahead"""
+        self.distance_from_start += v
+        if self.distance_from_start > self.polygon.total_perimeter_length:
+            self.distance_from_start = self.distance_from_start % self.polygon.total_perimeter_length
 
     def to_vector(self) -> Vector:
         return self._get_segment_and_vector()[1]
@@ -98,10 +113,13 @@ class PointOnPolygon2D:
         unit_vec = segment.unit_vector
         point = Vector(unit_vec.y, -unit_vec.x)
 
-        if vec + (point * self.epsilon) in self.polygon:
-            return point
-        else:
-            return -point
+        epsilon = EPSILON
+        while True:
+            if vec + (point * self.epsilon) in self.polygon:
+                return point
+            elif vec - (point * self.epsilon) in self.polygon:
+                return -point
+            epsilon *= 0.1
 
     def get_unit_vector_away_polygon(self) -> Vector:
         return -self.get_unit_vector_towards_polygon()
