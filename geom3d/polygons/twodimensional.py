@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import itertools
 import typing as tp
 import warnings
 
@@ -10,9 +9,10 @@ from satella.coding.sequences import add_next, skip_first
 from geom3d.exceptions import ValueWarning
 
 logger = logging.getLogger(__name__)
-from ..basic import Line, Vector, PointInLine
+from ..basic import Line, Vector
 
 EPSILON = 0.01
+
 
 class Polygon2D:
     """
@@ -63,6 +63,9 @@ class Polygon2D:
 
 
 class PointOnPolygon2D:
+    """
+    A point somewhere on the polygons' perimeter
+    """
     def __init__(self, polygon: Polygon2D, distance_from_start: float, epsilon: tp.Optional[float] = None):
         self.polygon = polygon
 
@@ -71,8 +74,10 @@ class PointOnPolygon2D:
         else:
             self.epsilon = epsilon
 
+        assert distance_from_start >= 0, "Distance can't be negative!"
+
         if distance_from_start > self.polygon.total_perimeter_length:
-            warnings.warn('Distance too big, wrapping it around the polygon', ValueWarning)
+            warnings.warn('Distance too large, wrapping it around the polygon', ValueWarning)
             distance_from_start = distance_from_start % self.polygon.total_perimeter_length
 
         self.distance_from_start = distance_from_start
