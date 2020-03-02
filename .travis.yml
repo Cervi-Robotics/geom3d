@@ -11,12 +11,9 @@ before_script:
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 install:
-  - pip install -r requirements.txt
   - pip install coverage
 script:
-  - bash tests/test_posix/test_hang_until_sig.sh
   - python setup.py test
 after_success:
   - coverage xml
   - ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT
-  - bash build.sh
