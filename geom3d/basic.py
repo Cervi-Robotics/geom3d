@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import logging
 import typing as tp
 from dataclasses import dataclass
-
 import math
-from satella.coding import rethrow_as
+
 from satella.coding.structures import Immutable
-logger = logging.getLogger(__name__)
 
 
 __all__ = ['Vector', 'Box', 'Line', 'PointInLine']
@@ -19,6 +16,16 @@ class Vector:
     x: float
     y: float
     z: float = 0.0
+
+    def cross_product(self, other: Vector) -> Vector:
+        """Calculate the cross product between this vector and the other"""
+        return Vector(self.y * other.z - self.z * other.y,
+                      self.z * other.y - self.x * other.z,
+                      self.x * other.y - self.y * other.z)
+
+    def dot_product(self, other: Vector) -> float:
+        """Calculate the dot product between this vector and the other"""
+        return self.x * other.x + self.y * other.y + self.z * other.z
 
     def __add__(self, other: Vector) -> Vector:
         return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
@@ -209,7 +216,6 @@ class Box(Immutable):
     def get_volume(self) -> float:
         """Calculate the volume of this box"""
         size = self.size
-        logger.warning(f'{size}')
         return size.x * size.y * size.z
 
     def get_surface_area(self) -> float:
@@ -218,7 +224,6 @@ class Box(Immutable):
         the XY plane
         """
         size = self.size
-        logger.warning(f'{size}')
         return size.x * size.y
 
     @property

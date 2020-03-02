@@ -1,18 +1,11 @@
 from __future__ import annotations
 
 import itertools
-import logging
 import typing as tp
-import warnings
-
-from satella.coding import precondition
 from satella.coding.sequences import add_next, skip_first
-logger = logging.getLogger(__name__)
-
-from .. import Path
-from ..exceptions import ValueWarning
 
 from ..basic import Line, Vector
+from .. import Path
 
 EPSILON = 0.01
 

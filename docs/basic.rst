@@ -21,3 +21,9 @@ Polygons
 
 .. autoclass:: geom3d.polygons.PointOnPolygon2D
     :members:
+
+More complex 3D structures
+--------------------------
+
+.. autoclass:: geom3d.meshes.Triangle
+    :members:
