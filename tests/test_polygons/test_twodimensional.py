@@ -11,3 +11,12 @@ class TestPolygon2D(unittest.TestCase):
         self.assertIn(Vector(0, 0, 0), poly)
         self.assertNotIn(Vector(2, 0.5, 0), poly)
         self.assertNotIn(Vector(2, 2, 0), poly)
+
+    def test_get_unit_vector_towards_polygon(self):
+        poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
+        self.assertEqual(poly.total_perimeter_length, 40)
+        self.assertEqual(poly.len_segments, [10, 10, 10, 10])
+        point = poly.get_point_on_polygon(5)
+        self.assertEqual(point.to_vector(), Vector(5, 0))
+        self.assertEqual(point.get_unit_vector_towards_polygon(), Vector(0, 1))
+        self.assertEqual(point.get_unit_vector_away_polygon(), Vector(0, -1))

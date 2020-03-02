@@ -22,6 +22,9 @@ class Vector:
     def __add__(self, other: Vector) -> Vector:
         return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
 
+    def __neg__(self) -> Vector:
+        return Vector(-self.x, -self.y, -self.z)
+
     def __sub__(self, other: Vector) -> Vector:
         return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
 
@@ -41,6 +44,8 @@ class Vector:
     def unitize(self) -> Vector:
         """Return an unit vector having the same heading as current vector"""
         length: float = self.length
+        if length == 0:
+            return ZERO_POINT
         return Vector(self.x / length, self.y / length, self.z / length)
 
     @classmethod
@@ -48,6 +53,8 @@ class Vector:
         """Return a (0, 0, 0) point"""
         return ZERO_POINT
 
+    def __str__(self) -> str:
+        return f'<{self.x}, {self.y}, {self.z}>'
 
 class PointInLine:
     """
@@ -65,7 +72,7 @@ class PointInLine:
 
     def to_vector(self) -> Vector:
         """Return the physical point given PointInLine corresponds to"""
-        return self.line.start + (self.line.get_unit_vector() * self.distance_from_start)
+        return self.line.start + (self.line.unit_vector * self.distance_from_start)
 
     @property
     def length(self) -> float:
@@ -78,6 +85,9 @@ class Line:
     start: Vector
     stop: Vector
 
+    def __str__(self) -> str:
+        return f'<Line {self.start} {self.stop}>'
+
     def __post_init__(self):
         super().__setattr__('_unit_vector', (self.stop - self.start).unitize())
 
@@ -87,7 +97,7 @@ class Line:
 
     @property
     def length(self) -> float:
-        return len(self.stop - self.start)
+        return (self.stop - self.start).length
 
     def get_point(self, distance_from_start: float) -> PointInLine:
         return PointInLine(self, distance_from_start)
@@ -96,7 +106,7 @@ class Line:
         """
         Return a list of vectors corresponding to equally-spaced points on this line
         """
-        self_length = len(self)
+        self_length = self.length
         current_distance = 0.0
         while current_distance < self_length:
             yield self.start + (self.unit_vector * current_distance)

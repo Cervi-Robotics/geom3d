@@ -1,12 +1,18 @@
+from __future__ import annotations
+
 import logging
 import itertools
 import typing as tp
+import warnings
 
 from satella.coding.sequences import add_next, skip_first
 
-logger = logging.getLogger(__name__)
-from ..basic import Line, Vector
+from geom3d.exceptions import ValueWarning
 
+logger = logging.getLogger(__name__)
+from ..basic import Line, Vector, PointInLine
+
+EPSILON = 0.01
 
 class Polygon2D:
     """
@@ -15,6 +21,8 @@ class Polygon2D:
 
     def __init__(self, points: tp.List[Vector]):
         self.points = points
+        self.len_segments = [line.length for line in self.iter_segments()]
+        self.total_perimeter_length = sum(self.len_segments)
 
     def iter_segments(self) -> tp.Iterator[Line]:
         """Get all segments"""
@@ -49,3 +57,46 @@ class Polygon2D:
                     prev_point.y - next_point.y) + next_point.x:
                 inside = not inside
         return inside
+
+    def get_point_on_polygon(self, distance_from_start: float) -> PointOnPolygon2D:
+        return PointOnPolygon2D(self, distance_from_start)
+
+
+class PointOnPolygon2D:
+    def __init__(self, polygon: Polygon2D, distance_from_start: float, epsilon: tp.Optional[float] = None):
+        self.polygon = polygon
+
+        if epsilon is None:
+            self.epsilon = EPSILON
+        else:
+            self.epsilon = epsilon
+
+        if distance_from_start > self.polygon.total_perimeter_length:
+            warnings.warn('Distance too big, wrapping it around the polygon', ValueWarning)
+            distance_from_start = distance_from_start % self.polygon.total_perimeter_length
+
+        self.distance_from_start = distance_from_start
+
+    def to_vector(self) -> Vector:
+        return self._get_segment_and_vector()[1]
+
+    def _get_segment_and_vector(self) -> tp.Tuple[Line, Vector]:
+        remaining_distance = self.distance_from_start
+        for segment, seg_length in zip(self.polygon.iter_segments(), self.polygon.len_segments):
+            if seg_length > remaining_distance:
+                return segment, segment.get_point(remaining_distance).to_vector()
+            else:
+                remaining_distance -= seg_length
+
+    def get_unit_vector_towards_polygon(self) -> Vector:
+        segment, vec = self._get_segment_and_vector()
+        unit_vec = segment.unit_vector
+        point = Vector(unit_vec.y, -unit_vec.x)
+
+        if vec + (point * self.epsilon) in self.polygon:
+            return point
+        else:
+            return -point
+
+    def get_unit_vector_away_polygon(self) -> Vector:
+        return -self.get_unit_vector_towards_polygon()
