@@ -6,8 +6,7 @@ setup(keywords=['geometry', '3d', 'flight', 'path'],
       packages=find_packages(include=['geom3d', 'geom3d.*']),
       version=__version__,
       install_requires=[
-            'satella', 'pint',
-            'LatLon @ git+https://github.com/eelcovv/LatLon.git',
+            'satella', 'pint'
       ],
       tests_require=[
           "nose2", "mock", "coverage", "nose2[coverage_plugin]"

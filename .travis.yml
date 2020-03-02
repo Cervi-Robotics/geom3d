@@ -2,12 +2,14 @@ language: python
 python:
   - "3.7"
   - "3.8"
+  - "nightly"
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 install:
   - pip install coverage
+  - pip install -r requirements.txt
 script:
   - python setup.py test
 after_success:
