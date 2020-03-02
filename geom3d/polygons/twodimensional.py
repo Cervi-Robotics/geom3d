@@ -115,9 +115,9 @@ class PointOnPolygon2D:
 
         epsilon = EPSILON
         while True:
-            if vec + (point * self.epsilon) in self.polygon:
+            if vec + (point * epsilon) in self.polygon:
                 return point
-            elif vec - (point * self.epsilon) in self.polygon:
+            elif vec - (point * epsilon) in self.polygon:
                 return -point
             epsilon *= 0.1
 
