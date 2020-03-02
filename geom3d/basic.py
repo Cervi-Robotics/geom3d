@@ -60,11 +60,12 @@ class Vector:
 
 class PointInLine:
     """
-    A point on a line
+    This class serves to compute points that lie a certain distance from the start, but still
+    lie on this line.
     """
     def __init__(self, line: Line, distance_from_start: float):
         self.line = line
-        self.distance_from_start = distance_from_start
+        self.distance_from_start = distance_from_start % self.line.length
 
     def __add__(self, other: float) -> PointInLine:
         return PointInLine(self.line, self.distance_from_start + other)
@@ -98,6 +99,7 @@ class Line:
 
     def __post_init__(self):
         super().__setattr__('_unit_vector', (self.stop - self.start).unitize())
+        super().__setattr__('_length', (self.stop - self.start).length)
 
     @property
     def unit_vector(self) -> Vector:
@@ -107,7 +109,7 @@ class Line:
     @property
     def length(self) -> float:
         """Return the length of this line"""
-        return (self.stop - self.start).length
+        return self._length
 
     def get_point(self, distance_from_start: float) -> PointInLine:
         """
@@ -117,18 +119,23 @@ class Line:
         """
         return PointInLine(self, distance_from_start)
 
-    def get_points_along(self, step: float) -> tp.Iterator[Vector]:
+    def get_points_along(self, step: float,
+                         include_last_point: bool = False) -> tp.Iterator[Vector]:
         """
         Return a list of vectors corresponding to equally-spaced points on this line
 
         :param step: next vector will be distant by exactly this from the previous one
+        :param include_last_point: whether to include last point. Distance from the almost last to
+            last might not be equal to step
         """
         self_length = self.length
         current_distance = 0.0
-        while current_distance < self_length:
+        while current_distance <= self_length:
             yield self.start + (self.unit_vector * current_distance)
             current_distance += step
-        yield self.stop
+
+        if include_last_point:
+            yield self.stop
 
 
 ZERO_POINT = Vector(0, 0, 0)
@@ -172,10 +179,8 @@ class Box(Immutable):
         return x_cond and y_cond and z_cond
 
     def relocate_to_zero(self) -> Box:
-        """
-        Return same sized box, but with starting point at (0, 0, 0)
-        """
-        return Box(Vector.zero(), self.stop - self.start)
+        """Return same sized box, but with starting point at (0, 0, 0)"""
+        return self.translate(-self.start)
 
     def translate(self, p: Vector) -> Box:
         """
@@ -200,6 +205,21 @@ class Box(Immutable):
     def center(self) -> Vector:
         """Returns the center of this box"""
         return (self.stop - self.start) / 2
+
+    def get_volume(self) -> float:
+        """Calculate the volume of this box"""
+        size = self.size
+        logger.warning(f'{size}')
+        return size.x * size.y * size.z
+
+    def get_surface_area(self) -> float:
+        """
+        Get surface area of this box. This will be the surface area that this box casts onto
+        the XY plane
+        """
+        size = self.size
+        logger.warning(f'{size}')
+        return size.x * size.y
 
     @property
     def size(self) -> Vector:

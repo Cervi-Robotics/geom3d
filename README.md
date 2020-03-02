@@ -10,3 +10,5 @@ geom
 [![Documentation Status](https://readthedocs.org/projects/geom3d/badge/?version=latest)](http://geom3d.readthedocs.io/en/latest/?badge=latest)
 
 A 3D geometry library.
+
+It can construct polygons and paths, and check for their intersections.

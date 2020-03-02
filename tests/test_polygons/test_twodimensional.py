@@ -25,6 +25,9 @@ class TestPolygon2D(unittest.TestCase):
         self.assertEqual(point.to_vector(), Vector(5, 0))
         self.assertEqual(point.get_unit_vector_towards_polygon(), Vector(0, 1))
         self.assertEqual(point.get_unit_vector_away_polygon(), Vector(0, -1))
+        point = poly.get_point_on_polygon(-5)
+        self.assertEqual(point.to_vector(), Vector(0, 5))
+        self.assertEqual(point.get_unit_vector_towards_polygon(), Vector(1, 0))
 
     def test_to_path(self):
         poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
