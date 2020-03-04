@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import itertools
 import typing as tp
 
@@ -12,7 +11,6 @@ from .. import Path
 from geom3d import base
 
 
-logger = logging.getLogger(__name__)
 
 
 class Polygon2D:
@@ -218,15 +216,12 @@ class PointOnPolygon2D:
         """
         segment, vec = self._get_segment_and_vector()
         if self.is_on_vertex():
-            logger.warning('Occurs on the vertex')
             # In that case we have returned the second segment
             prev = self.polygon.get_previous_segment(segment)
-            logger.warning(f'This segment is {segment} previous one is {prev}')
             unit_vec = segment.unit_vector
             prev_unit_vec = prev.unit_vector
             common_vec = (unit_vec + prev_unit_vec).unitize()
         else:
-            logger.warning('Does not occur on the vertex')
             common_vec = segment.unit_vector
         point = Vector(common_vec.y, -common_vec.x)     # construct orthogonal unit vector
 
