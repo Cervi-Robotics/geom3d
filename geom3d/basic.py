@@ -3,6 +3,7 @@ from __future__ import annotations
 import typing as tp
 from dataclasses import dataclass
 import math
+from . import base
 
 from satella.coding.structures import Immutable
 
@@ -44,6 +45,11 @@ class Vector:
 
     def __abs__(self) -> Vector:
         return Vector(abs(self.x), abs(self.y), abs(self.z))
+
+    def __eq__(self, other: Vector) -> bool:
+        return math.isclose(self.x, other.x, abs_tol=base.EPSILON) and \
+               math.isclose(self.y, other.y, abs_tol=base.EPSILON) and \
+               math.isclose(self.z, other.z, abs_tol=base.EPSILON)
 
     @property
     def length(self) -> float:

@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import itertools
 import typing as tp
+
+import math
 from satella.coding.sequences import add_next, skip_first
 
 from ..basic import Line, Vector
 from .. import Path
-
-EPSILON = 0.01
+from geom3d import base
 
 
 class Polygon2D:
@@ -29,8 +30,12 @@ class Polygon2D:
             raise ValueError('At least 3 vertices are needed to construct a polygon')
 
         self.points = points
+        self.segments = []
+        for p1, p2 in add_next(points, wrap_over=True):
+            self.segments.append(Line(p1, p2))
         self.len_segments = [line.length for line in self.iter_segments()]
         self.total_perimeter_length = sum(self.len_segments)
+        self.half_of_shortest_segment = min(x.length for x in self.segments) / 2
 
     def iter_segments(self) -> tp.Iterator[Line]:
         """
@@ -41,10 +46,23 @@ class Polygon2D:
         for point1, point2 in add_next(self.points, wrap_over=True):
             yield Line(point1, point2)
 
+    def get_signed_area(self) -> float:
+        """Area of this polygon as calculated by the shoelace formula"""
+        return 0.5 * sum(p0.x * p1.y - p1.x * p0.y for p0, p1 in add_next(self.points, wrap_over=True))
+
     def get_surface_area(self) -> float:
         """Return the surface area of this polygon"""
-        return 0.5 * abs(sum(p0.x * p1.y - p1.x * p0.y
-                             for p0, p1 in add_next(self.points, wrap_over=True)))
+        return abs(self.get_signed_area())
+
+    @property
+    def centroid(self) -> Vector:
+        """Return the center of mass for this polygon"""
+        sa = self.get_signed_area()
+        x = sum((p0.x + p1.x) * (p0.x * p1.y - p1.x * p0.y) for p0, p1 in
+                add_next(self.points, wrap_over=True)) / (6*sa)
+        y = sum((p0.y + p1.y) * (p0.x * p1.y - p1.x * p0.y) for p0, p1 in
+                add_next(self.points, wrap_over=True)) / (6*sa)
+        return Vector(x, y)
 
     def __iter__(self) -> tp.Iterator[Vector]:
         """Return all points that this polygon consists of"""
@@ -71,6 +89,21 @@ class Polygon2D:
                     prev_point.y - next_point.y) + next_point.x:
                 inside = not inside
         return inside
+
+    def get_nth_segment(self, segment: Line, n: int) -> Line:
+        """Get n-th segment in regards to the one currently passed in"""
+        if segment not in self.segments:
+            raise ValueError('This segment does not belong in this polygon')
+        index = self.segments.index(segment)
+        return self.segments[(index + n) % len(self.segments)]
+
+    def get_next_segment(self, segment: Line) -> Line:
+        """Return the next segment in regards to the one currently passed"""
+        return self.get_nth_segment(segment, +1)
+
+    def get_previous_segment(self, segment: Line) -> Line:
+        """Return the previous segment in regards to the one currently passed"""
+        return self.get_nth_segment(segment, -1)
 
     def get_point_on_polygon(self, distance_from_start: float) -> PointOnPolygon2D:
         """
@@ -118,7 +151,7 @@ class PointOnPolygon2D:
             if remaining_distance < length:
                 return False
             remaining_distance -= length
-            if remaining_distance == 0:
+            if math.isclose(remaining_distance, 0, abs_tol=base.EPSILON):
                 return True
 
     def advance(self, v: float):
@@ -157,10 +190,17 @@ class PointOnPolygon2D:
         Get a unit vector, that if applied to self.to_vector() would direct us inside the polygon
         """
         segment, vec = self._get_segment_and_vector()
-        unit_vec = segment.unit_vector
-        point = Vector(unit_vec.y, -unit_vec.x)     # construct orthogonal unit vector
+        if self.is_on_vertex():
+            # In that case we have returned the second segment
+            prev = self.polygon.get_previous_segment(segment)
+            unit_vec = segment.unit_vector
+            prev_unit_vec = prev.unit_vector
+            common_vec = (unit_vec + prev_unit_vec).unitize()
+        else:
+            common_vec = segment.unit_vector
+        point = Vector(common_vec.y, -common_vec.x)     # construct orthogonal unit vector
 
-        epsilon = EPSILON
+        epsilon = base.EPSILON
         while True:
             if vec + (point * epsilon) in self.polygon:
                 return point

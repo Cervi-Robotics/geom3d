@@ -28,6 +28,9 @@ class TestPolygon2D(unittest.TestCase):
         point = poly.get_point_on_polygon(-5)
         self.assertEqual(point.to_vector(), Vector(0, 5))
         self.assertEqual(point.get_unit_vector_towards_polygon(), Vector(1, 0))
+        point = poly.get_point_on_polygon(10)
+        self.assertTrue(point.is_on_vertex())
+        self.assertEqual(point.get_unit_vector_towards_polygon(), Vector(-1, 1).unitize())
 
     def test_to_path(self):
         poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
@@ -35,3 +38,9 @@ class TestPolygon2D(unittest.TestCase):
         path2 = Path.from_to(Vector(0, 0), Vector(10, 0), Vector(1, 1), 0.1)
         intersects = list(path1.get_intersecting_boxes(path2))
         self.assertGreater(len(intersects), 1)
+
+    def test_point_of_polygon(self):
+        poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
+        point = poly.get_point_on_polygon(10)
+        segment, point = point._get_segment_and_vector()
+        print(f'{segment}')

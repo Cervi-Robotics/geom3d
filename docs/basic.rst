@@ -22,6 +22,13 @@ Polygons
 .. autoclass:: geom3d.polygons.PointOnPolygon2D
     :members:
 
+Note that PointOnPolygon2D will behave correctly when faced with calculating the vector towards the polygon
+then such point occurs on the vertex. It will take the average of two segment's unit vectors into consideration in that
+case.
+
+
+.. autofunction:: geom3d.polygons.set_epsilon
+
 More complex 3D structures
 --------------------------
 
