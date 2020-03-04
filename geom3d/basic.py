@@ -47,9 +47,8 @@ class Vector:
         return Vector(abs(self.x), abs(self.y), abs(self.z))
 
     def __eq__(self, other: Vector) -> bool:
-        return math.isclose(self.x, other.x, abs_tol=base.EPSILON) and \
-               math.isclose(self.y, other.y, abs_tol=base.EPSILON) and \
-               math.isclose(self.z, other.z, abs_tol=base.EPSILON)
+        return base.isclose(self.x, other.x) and base.isclose(self.y, other.y) and \
+               base.isclose(self.z, other.z)
 
     def zero_z(self) -> Vector:
         """Return self, but with z coordinate zeroed"""

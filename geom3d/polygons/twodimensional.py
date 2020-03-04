@@ -169,7 +169,7 @@ class PointOnPolygon2D:
         """Does this point occur right on a vertex of the polygon?"""
         remaining_distance: float = self.distance_from_start
         for length in itertools.cycle(self.polygon.len_segments):
-            if math.isclose(remaining_distance, 0, abs_tol=base.EPSILON):
+            if base.iszero(remaining_distance):
                 return True
             if remaining_distance < length:
                 return False
@@ -183,9 +183,8 @@ class PointOnPolygon2D:
             it backwards.
         """
         self.distance_from_start = (self.distance_from_start + v) % \
-                                   self.polygon.total_perimeter_length
-        if math.isclose(self.distance_from_start, self.polygon.total_perimeter_length,
-                        abs_tol=base.EPSILON):
+                                    self.polygon.total_perimeter_length
+        if base.isclose(self.distance_from_start, self.polygon.total_perimeter_length):
             self.distance_from_start = 0.0
 
     def to_vector(self) -> Vector:
