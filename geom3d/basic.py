@@ -51,6 +51,10 @@ class Vector:
                math.isclose(self.y, other.y, abs_tol=base.EPSILON) and \
                math.isclose(self.z, other.z, abs_tol=base.EPSILON)
 
+    def zero_z(self) -> Vector:
+        """Return self, but with z coordinate zeroed"""
+        return Vector(self.x, self.y, 0)
+
     @property
     def length(self) -> float:
         return math.sqrt(math.pow(self.x, 2)+math.pow(self.y, 2)+math.pow(self.z, 2))

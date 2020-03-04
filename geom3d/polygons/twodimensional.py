@@ -1,20 +1,42 @@
 from __future__ import annotations
 
+import logging
 import itertools
 import typing as tp
 
 import math
-from satella.coding.sequences import add_next, skip_first
+from satella.coding.sequences import add_next, skip_first, zip_shifted
 
 from ..basic import Line, Vector
 from .. import Path
 from geom3d import base
 
 
+logger = logging.getLogger(__name__)
+
+
 class Polygon2D:
     """
     A polygon that disregards the z axis
     """
+
+    def downscale(self, step: float) -> Polygon2D:
+        """
+        Make a smaller polygon by moving each vertex by step inside the polygon.
+
+        :param step: distance to which move each vertex
+        :raises ValueError: polygon cannot be shrunk further
+        """
+        point = self.get_point_on_polygon(0.0)
+        points = []
+        for vector, segment_length in zip_shifted((self.points, 1), self.len_segments):
+            # so that point occurs on the end of n-th segment
+            point.advance(segment_length)
+            points.append(vector + point.get_unit_vector_towards_polygon()*step)
+        if not all(point in self for point in points):
+            raise ValueError('Polygon cannot be shrunk further!')
+        points = points[-1:] + points[:-1]      # since the first point was reported last...
+        return Polygon2D(points)
 
     def to_path(self, step: float, size: Vector) -> Path:
         """
@@ -29,7 +51,7 @@ class Polygon2D:
         if len(points) < 2:
             raise ValueError('At least 3 vertices are needed to construct a polygon')
 
-        self.points = points
+        self.points = [point.zero_z() for point in points]
         self.segments = []
         for p1, p2 in add_next(points, wrap_over=True):
             self.segments.append(Line(p1, p2))
@@ -142,17 +164,18 @@ class PointOnPolygon2D:
 
     def __init__(self, polygon: Polygon2D, distance_from_start: float):
         self.polygon = polygon
-        self.distance_from_start = distance_from_start % self.polygon.total_perimeter_length
+        self.distance_from_start = 0
+        self.advance(distance_from_start)
 
     def is_on_vertex(self) -> bool:
         """Does this point occur right on a vertex of the polygon?"""
         remaining_distance: float = self.distance_from_start
         for length in itertools.cycle(self.polygon.len_segments):
+            if math.isclose(remaining_distance, 0, abs_tol=base.EPSILON):
+                return True
             if remaining_distance < length:
                 return False
             remaining_distance -= length
-            if math.isclose(remaining_distance, 0, abs_tol=base.EPSILON):
-                return True
 
     def advance(self, v: float):
         """
@@ -161,7 +184,11 @@ class PointOnPolygon2D:
         :param v: amount to move the pointer along the perimeter, or a negative value to move
             it backwards.
         """
-        self.distance_from_start = (self.distance_from_start + v) % self.polygon.total_perimeter_length
+        self.distance_from_start = (self.distance_from_start + v) % \
+                                   self.polygon.total_perimeter_length
+        if math.isclose(self.distance_from_start, self.polygon.total_perimeter_length,
+                        abs_tol=base.EPSILON):
+            self.distance_from_start = 0.0
 
     def to_vector(self) -> Vector:
         """
@@ -191,12 +218,15 @@ class PointOnPolygon2D:
         """
         segment, vec = self._get_segment_and_vector()
         if self.is_on_vertex():
+            logger.warning('Occurs on the vertex')
             # In that case we have returned the second segment
             prev = self.polygon.get_previous_segment(segment)
+            logger.warning(f'This segment is {segment} previous one is {prev}')
             unit_vec = segment.unit_vector
             prev_unit_vec = prev.unit_vector
             common_vec = (unit_vec + prev_unit_vec).unitize()
         else:
+            logger.warning('Does not occur on the vertex')
             common_vec = segment.unit_vector
         point = Vector(common_vec.y, -common_vec.x)     # construct orthogonal unit vector
 

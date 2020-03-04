@@ -2,6 +2,9 @@ import unittest
 import logging
 import typing as tp
 import sys
+
+import math
+
 from geom3d import Path, Vector
 from geom3d.polygons import Polygon2D
 
@@ -17,15 +20,29 @@ class TestPolygon2D(unittest.TestCase):
         self.assertNotIn(Vector(2, 0.5, 0), poly)
         self.assertNotIn(Vector(2, 2, 0), poly)
 
+    def test_downscaling_valueerror(self):
+        poly = Polygon2D([Vector(0, 0), Vector(1, 0), Vector(1, 1), Vector(0, 1)])
+        self.assertRaises(ValueError, lambda: poly.downscale(2))
+
+    def test_downscaling(self):
+        poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
+        poly = poly.downscale(1)
+        self.assertEqual(poly.points[0], Vector(1, 1).unitize())
+        self.assertEqual(poly.points[1], Vector(10, 0)+Vector(-1, 1).unitize())
+        self.assertEqual(poly.points[2], Vector(10, 10)+Vector(-1, -1).unitize())
+        self.assertEqual(poly.points[3], Vector(0, 10)+Vector(1, -1).unitize())
+
     def test_get_unit_vector_towards_polygon(self):
         poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
         self.assertEqual(poly.total_perimeter_length, 40)
         self.assertEqual(poly.len_segments, [10, 10, 10, 10])
-        point = poly.get_point_on_polygon(5)
+        point = poly.get_point_on_polygon(0)
+        self.assertEqual(point.get_unit_vector_towards_polygon(), Vector(1, 1).unitize())
+        point.advance(5)
         self.assertEqual(point.to_vector(), Vector(5, 0))
         self.assertEqual(point.get_unit_vector_towards_polygon(), Vector(0, 1))
         self.assertEqual(point.get_unit_vector_away_polygon(), Vector(0, -1))
-        point = poly.get_point_on_polygon(-5)
+        point.advance(-10)
         self.assertEqual(point.to_vector(), Vector(0, 5))
         self.assertEqual(point.get_unit_vector_towards_polygon(), Vector(1, 0))
         point = poly.get_point_on_polygon(10)
