@@ -1,3 +1,1 @@
 satella
-pint
-git+https://github.com/eelcovv/LatLon.git

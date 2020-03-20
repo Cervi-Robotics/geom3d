@@ -60,4 +60,3 @@ class TestPolygon2D(unittest.TestCase):
         poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
         point = poly.get_point_on_polygon(10)
         segment, point = point._get_segment_and_vector()
-        print(f'{segment}')

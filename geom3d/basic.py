@@ -73,6 +73,12 @@ class Vector:
     def __str__(self) -> str:
         return f'<{self.x}, {self.y}, {self.z}>'
 
+    def __repr__(self) -> str:
+        if base.iszero(self.z):
+            return f'Vector({self.x}, {self.y})'
+        else:
+            return f'Vector({self.x}, {self.y}, {self.z})'
+
 
 class PointInLine:
     """

@@ -1,3 +1,30 @@
+Degree and coordinate conversion
+================================
+
+Sometimes working directly with coordinates in degrees is cumbersome.
+For example, you have no way to calculate easily distance between two
+points, or say "this coordinate 2 metres west".
+
+These routines and objects try to remedy that:
+
+.. autoclass:: geom3d.degrees.Coordinates
+    :members:
+
+.. autoclass:: geom3d.degrees.XYPoint
+    :members:
+
+.. autoclass:: geom3d.degrees.XYPointCollection
+    :members:
+
+Please note that error introduced by this transformation is the more
+pronounced the closer you are to the Poles, so no flying over the Poles
+for you!
+
+.. autoclass:: geom3d.degrees.Planet
+
+.. autoclass:: geom3d.degrees.Earth
+
+
 Basic structures
 ================
 
