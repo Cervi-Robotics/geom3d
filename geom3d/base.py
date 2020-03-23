@@ -17,6 +17,10 @@ def isclose(a: float, b: float) -> bool:
     return math.isclose(a, b, abs_tol=EPSILON)
 
 
+def true_modulo(a: float, b: float) -> float:
+    return a % b
+
+
 def iszero(a: float) -> bool:
     """
     Is a zero according to local epsilon?

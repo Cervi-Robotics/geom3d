@@ -1,11 +1,8 @@
 import unittest
 import logging
-import typing as tp
-import sys
 
-import math
-
-from geom3d import Path, Vector
+from geom3d.paths import Path
+from geom3d import Vector
 from geom3d.polygons import Polygon2D
 
 

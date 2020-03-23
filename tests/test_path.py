@@ -1,5 +1,6 @@
 import unittest
-from geom3d import Path, Vector
+from geom3d.paths import Path
+from geom3d import Vector
 
 
 class TestPath(unittest.TestCase):

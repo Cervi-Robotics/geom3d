@@ -18,6 +18,16 @@ def must_be_initialized(fun):
 
 class Path:
 
+    def set_z_to(self, z: float):
+        """
+        Change the z of every vector to that provided.
+
+        :param z: new z to set for every vector
+
+        :return: new Path
+        """
+        return
+
     @classmethod
     def from_to(cls, source: Vector, destination: Vector, size: Vector,
                 step: tp.Optional[float] = None):
@@ -67,6 +77,9 @@ class Path:
         :param point: point to advance towards
         :param delta: size of step to use in constructing the path
         """
+        if iszero((point - self.head).length):
+            return
+
         while point != self.head:
             vector_towards = (point - self.head)
             if vector_towards.length < delta:

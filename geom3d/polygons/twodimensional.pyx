@@ -1,4 +1,4 @@
-from __future__ import annotations
+from libc.math cimport fabs
 
 import itertools
 import typing as tp
@@ -8,31 +8,34 @@ from dataclasses import dataclass
 from satella.coding import precondition
 from satella.coding.sequences import add_next, skip_first, shift
 
-from ..basic import Line, Vector
-from .. import Path
+from ..basic cimport Line, Vector
+from ..paths import Path
+
 from geom3d import base
 
 
-class Polygon2D:
+cdef class Polygon2D:
     """
     A polygon that disregards the z axis
     """
 
-    def downscale(self, step: float) -> Polygon2D:
+    cpdef Polygon2D downscale(self, double step):
         """
         Make a smaller polygon by moving each vertex by step inside the polygon.
 
         :param step: distance to which move each vertex
         :raises ValueError: polygon cannot be shrunk further
         """
-        point = self.get_point_on_polygon(0.0)
-        points = []
+        cdef PointOnPolygon2D point = self.get_point_on_polygon(0.0)
+        cdef list points = []
         for vector, segment_length in zip(shift(self.points, 1), self.len_segments):
             # so that point occurs on the end of n-th segment
             point.advance(segment_length)
-            points.append(vector + point.get_unit_vector_towards_polygon()*step)
-        if not all(point in self for point in points):
-            raise ValueError('Polygon cannot be shrunk further!')
+            points.append(vector.add(point.get_unit_vector_towards_polygon().mul(step)))
+        cdef Vector point_p
+        for point_p in points:
+            if not point_p in self:
+                raise ValueError('Polygon cannot be shrunk further!')
         points = points[-1:] + points[:-1]      # since the first point was reported last...
         return Polygon2D(points)
 
@@ -57,14 +60,15 @@ class Polygon2D:
         self.total_perimeter_length = sum(self.len_segments)
         self.half_of_shortest_segment = min(x.length for x in self.segments) / 2
 
-    def get_segment_at_distance(self, offset: float) -> Line:
+    cpdef Line get_segment_at_distance(self, double offset):
         """
         Return the segment backing some distance along the polygon's perimeter
 
         :param offset: the distance to travel to get the polygon's segment. If this appears directly
             on a vertex, the segment which starts at this vertex will be returned.
         """
-        length_travelled = 0.0
+        cdef double length_travelled = 0.0
+        cdef Line segment
         for segment in itertools.cycle(self.iter_segments()):
             length_travelled += segment.length
             if offset <= length_travelled:
@@ -79,14 +83,18 @@ class Polygon2D:
         for point1, point2 in add_next(self.points, wrap_over=True):
             yield Line(point1, point2)
 
-    def get_signed_area(self) -> float:
+    cpdef double get_signed_area(self):
         """Area of this polygon as calculated by the shoelace formula"""
-        return 0.5 * sum(p0.x * p1.y - p1.x * p0.y for p0, p1 in add_next(self.points,
-                                                                          wrap_over=True))
+        cdef double sum_ = 0
+        cdef Vector p0
+        cdef Vector p1
+        for p0, p1 in add_next(self.points, wrap_over=True):
+            sum_ += p0.x * p1.y - p1.x * p0.y
+        return sum_ * 0.5
 
-    def get_surface_area(self) -> float:
+    cpdef double get_surface_area(self):
         """Return the surface area of this polygon"""
-        return abs(self.get_signed_area())
+        return fabs(self.get_signed_area())
 
     @property
     def centroid(self) -> Vector:
@@ -112,21 +120,29 @@ class Polygon2D:
         """Return all points that this polygon consists of"""
         return iter(self.points)
 
-    def __contains__(self, p: Vector) -> bool:
-        """Is point p inside polygon?"""
-        max_x = min_x = self.points[0].x
-        max_y = min_y = self.points[0].y
+    cdef char contains(self, Vector p):
+        cdef double max_x = self.points[0].x
+        cdef double min_x = self.points[0].x
+        cdef double max_y = self.points[0].y
+        cdef double min_y = self.points[0].y
+        cdef Vector point
 
-        for point in skip_first(self, 1):
-            min_x = min(min_x, point.x)
-            max_x = max(max_x, point.x)
-            min_y = min(min_y, point.y)
-            max_y = max(max_y, point.y)
+        for point in self.points[1:]:
+            if point.x < min_x:
+                min_x = point.x
+            if point.x > max_x:
+                max_x = point.x
+            if point.y < min_y:
+                min_y = point.y
+            if point.y > max_y:
+                max_y = point.y
 
         if (p.x < min_x) or (p.x > max_x) or (p.y < min_y) or (p.y > max_y):
             return False
 
-        inside: bool = False
+        cdef char inside = False
+        cdef Vector next_point
+        cdef Vector prev_point
         for next_point, prev_point in add_next(self, wrap_over=True):
             if (next_point.y > p.y) != (prev_point.y > p.y) and p.x < (
                     prev_point.x - next_point.x) * (p.y - next_point.y) / (
@@ -134,24 +150,27 @@ class Polygon2D:
                 inside = not inside
         return inside
 
-    def get_nth_segment(self, segment: Line, n: int) -> Line:
+    def __contains__(self, p: Vector) -> bool:
+        """Is point p inside polygon?"""
+        return self.contains(p)
+
+    cpdef Line get_nth_segment(self, Line segment, int n):
         """Get n-th segment in regards to the one currently passed in"""
         if segment not in self.segments:
             raise ValueError('This segment does not belong in this polygon')
-        index = self.segments.index(segment)
+        cdef int index = self.segments.index(segment)
         return self.segments[(index + n) % len(self.segments)]
 
-    def get_next_segment(self, segment: Line) -> Line:
+    cpdef Line get_next_segment(self, Line segment):
         """Return the next segment in regards to the one currently passed"""
         return self.get_nth_segment(segment, +1)
 
-    def get_previous_segment(self, segment: Line) -> Line:
+    cpdef Line get_previous_segment(self, Line segment):
         """Return the previous segment in regards to the one currently passed"""
         return self.get_nth_segment(segment, -1)
 
-    @precondition(None, '0 <= x < 1')
-    def get_point_on_polygon_relative(self, distance_from_start: float,
-                                      offset: float = 0) -> PointOnPolygon2D:
+    cpdef PointOnPolygon2D get_point_on_polygon_relative(self, double distance_from_start,
+                                      double offset = 0):
         """
         Return a point on polygon counted as a fraction of it's total perimeter.
 
@@ -164,8 +183,7 @@ class Polygon2D:
         return self.get_point_on_polygon(self.total_perimeter_length * distance_from_start,
                                          self.total_perimeter_length * offset)
 
-    def get_point_on_polygon(self, distance_from_start: float, offset: float = 0) -> \
-            PointOnPolygon2D:
+    cpdef PointOnPolygon2D get_point_on_polygon(self, double distance_from_start, double offset = 0):
         """
         Return a point somewhere on the perimeter of this polygon
 
@@ -184,8 +202,8 @@ class Polygon2D:
         :param include_last_point: whether to include last point. Distance from the almost last to
             last might not be equal to step
         """
-        distance_travelled: float = 0.0
-        pop = self.get_point_on_polygon(0.0)
+        cdef double distance_travelled = 0.0
+        cdef PointOnPolygon2D pop = self.get_point_on_polygon(0.0)
         while distance_travelled < self.total_perimeter_length:
             yield pop.to_vector()
             pop.advance(step)
@@ -195,19 +213,24 @@ class Polygon2D:
             yield self.points[-1]
 
 
-@dataclass
-class PointOnPolygon2D:
-    polygon: Polygon2D
-    _distance_from_start: float
-    offset: float = 0
+cdef class PointOnPolygon2D:
+
+    def __init__(self, polygon: Polygon2D, distance_from_start: float, offset: float):
+        self.polygon = polygon
+        self._distance_from_start = distance_from_start
+        self.offset = offset
 
     @property
     def distance_from_start(self) -> float:
-        return (self._distance_from_start + self.offset) % self.polygon.total_perimeter_length
+        return self.get_distance_from_start()
 
-    def is_on_vertex(self) -> bool:
+    cdef double get_distance_from_start(self):
+        return base.true_modulo(self._distance_from_start + self.offset, self.polygon.total_perimeter_length)
+
+    cpdef char is_on_vertex(self):
         """Does this point occur right on a vertex of the polygon?"""
-        remaining_distance: float = self.distance_from_start
+        cdef double remaining_distance = self.distance_from_start
+        cdef double length
         for length in itertools.cycle(self.polygon.len_segments):
             if base.iszero(remaining_distance):
                 return True
@@ -215,7 +238,7 @@ class PointOnPolygon2D:
                 return False
             remaining_distance -= length
 
-    def advance(self, v: float):
+    cpdef void advance(self, double v):
         """
         Move the pointer v ahead.
 
@@ -226,7 +249,7 @@ class PointOnPolygon2D:
         """
         self._distance_from_start = self._distance_from_start + v
 
-    def to_vector(self) -> Vector:
+    cpdef Vector to_vector(self):
         """
         Returns the coordinates of the point on the perimeter.
 
@@ -234,47 +257,55 @@ class PointOnPolygon2D:
         """
         return self.get_segment_and_vector()[1]
 
-    def get_segment_and_vector(self) -> tp.Tuple[Line, Vector]:
+    cpdef object get_segment_and_vector(self):
         """
         Return both the vector (as in :func:`~geom3d.polygons.PointOnPolygon2D.to_vector`) and the
         segment on which it lies.
 
         :return: a tuple of (Line - the segment, Vector - coordinates of this point)
         """
-        remaining_distance = self.distance_from_start
+        cdef double remaining_distance = self.distance_from_start
+        cdef Line segment
+        cdef double seg_length
         for segment, seg_length in zip(self.polygon.iter_segments(), self.polygon.len_segments):
             if seg_length > remaining_distance:
                 return segment, segment.get_point(remaining_distance).to_vector()
             else:
                 remaining_distance -= seg_length
 
-    def get_unit_vector_towards_polygon(self) -> Vector:
+    cpdef Vector get_unit_vector_towards_polygon(self):
         """
         Get a unit vector, that if applied to self.to_vector() would direct us inside the polygon
         """
+        cdef Line segment
+        cdef Line prev
+        cdef Vector unit_vec
+        cdef Vector prev_unit_vec
+        cdef Vector common_vec
+        cdef Vector vec
         segment, vec = self.get_segment_and_vector()
         if self.is_on_vertex():
             # In that case we have returned the second segment
             prev = self.polygon.get_previous_segment(segment)
             unit_vec = segment.unit_vector
             prev_unit_vec = prev.unit_vector
-            common_vec = (unit_vec + prev_unit_vec).unitize()
+            common_vec = unit_vec.add(prev_unit_vec).unitize()
         else:
             common_vec = segment.unit_vector
-        point = Vector(common_vec.y, -common_vec.x)     # construct orthogonal unit vector
+        cdef Vector point = Vector(common_vec.y, -common_vec.x)     # construct orthogonal unit vector
 
-        epsilon = base.EPSILON
+        cdef double epsilon = base.EPSILON
         while True:
-            if vec + (point * epsilon) in self.polygon:
+            if vec.add(point.mul(epsilon)) in self.polygon:
                 return point
-            elif vec - (point * epsilon) in self.polygon:
+            elif vec.sub(point.mul(epsilon)) in self.polygon:
                 return -point
             epsilon *= 0.1
 
-    def get_unit_vector_away_polygon(self) -> Vector:
+    cpdef Vector get_unit_vector_away_polygon(self):
         """
         Return exactly the opposite vector that
         :func:`~geom3d.polygons.PointOnPolygon2D.get_unit_vector_towards_polygon`
         would return
         """
-        return -self.get_unit_vector_towards_polygon()
+        return self.get_unit_vector_towards_polygon().neg()
