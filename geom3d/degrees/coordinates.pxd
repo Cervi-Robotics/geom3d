@@ -6,7 +6,7 @@ from .planets cimport Planet
 cdef class XYPoint:
     cdef:
         double avg_lat
-        char is_avg_lat_set     # type: bool
+        bint is_avg_lat_set     # type: bool
         double x
         double y
 

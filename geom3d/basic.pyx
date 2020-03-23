@@ -1,10 +1,6 @@
 from libc.math cimport sqrt, fabs
 import typing as tp
-from dataclasses import dataclass
-import math
-from . import base
-
-from satella.coding.structures import Immutable
+from .base cimport iszero, isclose
 
 
 __all__ = ['Vector', 'Box', 'Line', 'PointInLine']
@@ -66,9 +62,9 @@ cdef class Vector:
     def __abs__(self) -> Vector:
         return self.abs()
 
-    cdef char eq(self, Vector other):
-        return base.isclose(self.x, other.x) and base.isclose(self.y, other.y) and \
-               base.isclose(self.z, other.z)
+    cdef bint eq(self, Vector other):
+        return isclose(self.x, other.x) and isclose(self.y, other.y) and \
+               isclose(self.z, other.z)
 
     def __eq__(self, other: Vector) -> bool:
         return self.eq(other)
@@ -100,7 +96,7 @@ cdef class Vector:
         return f'<{self.x}, {self.y}, {self.z}>'
 
     def __repr__(self) -> str:
-        if base.iszero(self.z):
+        if iszero(self.z):
             return f'Vector({self.x}, {self.y})'
         else:
             return f'Vector({self.x}, {self.y}, {self.z})'
@@ -229,21 +225,21 @@ cdef class Box:
         self.start = start
         self.stop = stop
 
-    cpdef char collides(self, Box other):
+    cpdef bint collides(self, Box other):
         """Does this box share at least one point with the other box?"""
-        cdef char x_cond = self.start.x <= other.start.x <= self.stop.x
+        cdef bint x_cond = self.start.x <= other.start.x <= self.stop.x
         x_cond |= other.start.x <= self.stop.x <= other.stop.x
 
         x_cond |= other.start.x <= self.start.x <= other.stop.x
         x_cond |= self.start.x <= other.stop.x <= self.stop.x
 
-        cdef char y_cond = self.start.y <= other.start.y <= self.stop.y
+        cdef bint y_cond = self.start.y <= other.start.y <= self.stop.y
         y_cond |= other.start.y <= self.stop.y <= other.stop.y
 
         y_cond |= other.start.y <= self.start.y <= other.stop.y
         y_cond |= self.start.y <= other.stop.y <= self.stop.y
 
-        cdef char z_cond = self.start.z <= other.start.z <= self.stop.z
+        cdef bint z_cond = self.start.z <= other.start.z <= self.stop.z
         z_cond |= other.start.z <= self.stop.z <= other.stop.z
 
         z_cond |= other.start.z <= self.start.z <= other.stop.z

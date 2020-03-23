@@ -14,7 +14,7 @@ cdef class Vector:
     cpdef Vector mul(self, double other)
     cpdef Vector neg(self)
     cpdef Vector abs(self)
-    cdef char eq(self, Vector other)    # type: (Vector) -> bool
+    cdef bint eq(self, Vector other)
     cpdef Vector truediv(self, double other)
     cdef double get_length(self)
 
@@ -45,7 +45,7 @@ cdef class Box:
         readonly Vector start
         readonly Vector stop
 
-    cpdef char collides(self, Box other)        # type: (Box) -> bool
+    cpdef bint collides(self, Box other)        # type: (Box) -> bool
     cpdef Box translate(self, Vector p)
     cpdef Box relocate_to_zero(self)
     cpdef double get_volume(self)

@@ -125,7 +125,7 @@ cdef class Polygon2D:
         """Return all points that this polygon consists of"""
         return iter(self.points)
 
-    cdef char contains(self, Vector p):
+    cdef bint contains(self, Vector p):
         cdef:
             double max_x = self.points[0].x
             double min_x = self.points[0].x
@@ -147,7 +147,7 @@ cdef class Polygon2D:
             return False
 
         cdef:
-            char inside = False
+            bint inside = False
             Vector next_point
             Vector prev_point
 
@@ -235,7 +235,7 @@ cdef class PointOnPolygon2D:
     cdef double get_distance_from_start(self):
         return true_modulo(self._distance_from_start + self.offset, self.polygon.total_perimeter_length)
 
-    cpdef char is_on_vertex(self):      # type: () -> bool
+    cpdef bint is_on_vertex(self):      # type: () -> bool
         """Does this point occur right on a vertex of the polygon?"""
         cdef:
             double remaining_distance = self.distance_from_start

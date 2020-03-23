@@ -16,7 +16,7 @@ cdef class Polygon2D:
                                       double offset=*)
     cpdef Line get_next_segment(self, Line segment)
     cpdef Line get_previous_segment(self, Line segment)
-    cdef char contains(self, Vector p)        # type: (Vector) -> bool
+    cdef bint contains(self, Vector p)
     cpdef double get_signed_area(self)
     cpdef Line get_nth_segment(self, Line segment, int n)
     cpdef double get_surface_area(self)
@@ -29,7 +29,7 @@ cdef class PointOnPolygon2D:
         double _distance_from_start
         double offset
 
-    cpdef char is_on_vertex(self)   # type: () -> bool
+    cpdef bint is_on_vertex(self)
     cpdef void advance(self, double v)
     cpdef Vector to_vector(self)
     cdef double get_distance_from_start(self)
