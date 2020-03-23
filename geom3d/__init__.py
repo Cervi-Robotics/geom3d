@@ -1,4 +1,4 @@
-__version__ = '0.2'
+__version__ = '0.3_a1'
 
 from .basic import Line, PointInLine, Vector, Box
 from .paths import Path

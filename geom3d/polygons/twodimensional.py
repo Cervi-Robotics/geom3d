@@ -3,14 +3,14 @@ from __future__ import annotations
 import itertools
 import typing as tp
 
-import math
-from satella.coding.sequences import add_next, skip_first, zip_shifted
+from dataclasses import dataclass
+
+from satella.coding import precondition
+from satella.coding.sequences import add_next, skip_first, shift
 
 from ..basic import Line, Vector
 from .. import Path
 from geom3d import base
-
-
 
 
 class Polygon2D:
@@ -27,7 +27,7 @@ class Polygon2D:
         """
         point = self.get_point_on_polygon(0.0)
         points = []
-        for vector, segment_length in zip_shifted((self.points, 1), self.len_segments):
+        for vector, segment_length in zip(shift(self.points, 1), self.len_segments):
             # so that point occurs on the end of n-th segment
             point.advance(segment_length)
             points.append(vector + point.get_unit_vector_towards_polygon()*step)
@@ -57,6 +57,19 @@ class Polygon2D:
         self.total_perimeter_length = sum(self.len_segments)
         self.half_of_shortest_segment = min(x.length for x in self.segments) / 2
 
+    def get_segment_at_distance(self, offset: float) -> Line:
+        """
+        Return the segment backing some distance along the polygon's perimeter
+
+        :param offset: the distance to travel to get the polygon's segment. If this appears directly
+            on a vertex, the segment which starts at this vertex will be returned.
+        """
+        length_travelled = 0.0
+        for segment in itertools.cycle(self.iter_segments()):
+            length_travelled += segment.length
+            if offset <= length_travelled:
+                return segment
+
     def iter_segments(self) -> tp.Iterator[Line]:
         """
         Get all segments
@@ -68,7 +81,8 @@ class Polygon2D:
 
     def get_signed_area(self) -> float:
         """Area of this polygon as calculated by the shoelace formula"""
-        return 0.5 * sum(p0.x * p1.y - p1.x * p0.y for p0, p1 in add_next(self.points, wrap_over=True))
+        return 0.5 * sum(p0.x * p1.y - p1.x * p0.y for p0, p1 in add_next(self.points,
+                                                                          wrap_over=True))
 
     def get_surface_area(self) -> float:
         """Return the surface area of this polygon"""
@@ -83,6 +97,16 @@ class Polygon2D:
         y = sum((p0.y + p1.y) * (p0.x * p1.y - p1.x * p0.y) for p0, p1 in
                 add_next(self.points, wrap_over=True)) / (6*sa)
         return Vector(x, y)
+
+    def iter_from(self, offset: float = 0) -> tp.Iterator[Vector]:
+        """
+        Return all points that this polygon consists of, but starting from offset
+
+        :param offset: length from start from where to start counting. The next vertex specified
+        will come in first. If the offset is directly on a vertex, this vertex will be returned.
+        """
+        first_segment = self.get_segment_at_distance(offset)
+        return shift(self.points, self.segments.index(first_segment))
 
     def __iter__(self) -> tp.Iterator[Vector]:
         """Return all points that this polygon consists of"""
@@ -125,14 +149,31 @@ class Polygon2D:
         """Return the previous segment in regards to the one currently passed"""
         return self.get_nth_segment(segment, -1)
 
-    def get_point_on_polygon(self, distance_from_start: float) -> PointOnPolygon2D:
+    @precondition(None, '0 <= x < 1')
+    def get_point_on_polygon_relative(self, distance_from_start: float,
+                                      offset: float = 0) -> PointOnPolygon2D:
+        """
+        Return a point on polygon counted as a fraction of it's total perimeter.
+
+        Eg. 0.5 will get you a point on polygon directly at half of it's perimeter.
+
+        :param distance_from_start: fraction of polygon's total perimeter.
+            Must be greater or equal than zero, must be less than 1
+        :param offset: offset to use, also a fraction of polygon's total length
+        """
+        return self.get_point_on_polygon(self.total_perimeter_length * distance_from_start,
+                                         self.total_perimeter_length * offset)
+
+    def get_point_on_polygon(self, distance_from_start: float, offset: float = 0) -> \
+            PointOnPolygon2D:
         """
         Return a point somewhere on the perimeter of this polygon
 
         :param distance_from_start: distance from the first point of this polygon. Can be negative,
             in which case we will count backwards.
+        :param offset: offset to add in while calculating the distance. This value is fixed.
         """
-        return PointOnPolygon2D(self, distance_from_start)
+        return PointOnPolygon2D(self, distance_from_start, offset)
 
     def get_points_along(self, step: float,
                          include_last_point: bool = False) -> tp.Iterator[Vector]:
@@ -154,16 +195,15 @@ class Polygon2D:
             yield self.points[-1]
 
 
+@dataclass
 class PointOnPolygon2D:
-    """
-    This class serves to compute points that lie somewhere on the polygons' perimeter, counting
-    as polygon's vertices were specified
-    """
+    polygon: Polygon2D
+    _distance_from_start: float
+    offset: float = 0
 
-    def __init__(self, polygon: Polygon2D, distance_from_start: float):
-        self.polygon = polygon
-        self.distance_from_start = 0
-        self.advance(distance_from_start)
+    @property
+    def distance_from_start(self) -> float:
+        return (self._distance_from_start + self.offset) % self.polygon.total_perimeter_length
 
     def is_on_vertex(self) -> bool:
         """Does this point occur right on a vertex of the polygon?"""
@@ -177,15 +217,14 @@ class PointOnPolygon2D:
 
     def advance(self, v: float):
         """
-        Move the pointer v ahead
+        Move the pointer v ahead.
+
+        The only routine to move inside the polygon at all
 
         :param v: amount to move the pointer along the perimeter, or a negative value to move
             it backwards.
         """
-        self.distance_from_start = (self.distance_from_start + v) % \
-                                    self.polygon.total_perimeter_length
-        if base.isclose(self.distance_from_start, self.polygon.total_perimeter_length):
-            self.distance_from_start = 0.0
+        self._distance_from_start = self._distance_from_start + v
 
     def to_vector(self) -> Vector:
         """
@@ -193,9 +232,9 @@ class PointOnPolygon2D:
 
         The point will lie precisely on the perimeter
         """
-        return self._get_segment_and_vector()[1]
+        return self.get_segment_and_vector()[1]
 
-    def _get_segment_and_vector(self) -> tp.Tuple[Line, Vector]:
+    def get_segment_and_vector(self) -> tp.Tuple[Line, Vector]:
         """
         Return both the vector (as in :func:`~geom3d.polygons.PointOnPolygon2D.to_vector`) and the
         segment on which it lies.
@@ -213,7 +252,7 @@ class PointOnPolygon2D:
         """
         Get a unit vector, that if applied to self.to_vector() would direct us inside the polygon
         """
-        segment, vec = self._get_segment_and_vector()
+        segment, vec = self.get_segment_and_vector()
         if self.is_on_vertex():
             # In that case we have returned the second segment
             prev = self.polygon.get_previous_segment(segment)

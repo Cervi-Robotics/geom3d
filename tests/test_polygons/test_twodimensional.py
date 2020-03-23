@@ -49,6 +49,11 @@ class TestPolygon2D(unittest.TestCase):
         self.assertTrue(point.is_on_vertex())
         self.assertEqual(point.get_unit_vector_towards_polygon(), Vector(-1, 1).unitize())
 
+    def test_iter_from(self):
+        poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
+        self.assertEqual(list(poly.iter_from(12)), [Vector(10, 0), Vector(10, 10), Vector(0, 10),
+                                                    Vector(0, 0)])
+
     def test_to_path(self):
         poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
         path1 = poly.to_path(0.1, Vector(1, 1))
@@ -59,4 +64,4 @@ class TestPolygon2D(unittest.TestCase):
     def test_point_of_polygon(self):
         poly = Polygon2D([Vector(0, 0), Vector(10, 0), Vector(10, 10), Vector(0, 10)])
         point = poly.get_point_on_polygon(10)
-        segment, point = point._get_segment_and_vector()
+        segment, point = point.get_segment_and_vector()

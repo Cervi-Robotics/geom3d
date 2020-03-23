@@ -1,6 +1,6 @@
 from satella.exceptions import CustomException
 
-__all__ = ['GeomError', 'GeomWarning', 'ValueWarning']
+__all__ = ['GeomError', 'GeomWarning', 'ValueWarning', 'NotReadyError']
 
 
 class GeomError(CustomException):

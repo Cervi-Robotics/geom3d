@@ -12,3 +12,6 @@ geom3d
 A 3D geometry library.
 
 It can construct polygons and paths, and check for their intersections.
+
+Geom3d uses [semantic versioning 2.0](https://semver.org/spec/v2.0.0.html).
+

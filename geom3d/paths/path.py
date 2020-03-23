@@ -1,14 +1,11 @@
 from __future__ import annotations
-
-import logging
 import warnings
 import functools
 import typing as tp
 from satella.coding.sequences import half_product
-from .basic import Box, Vector, Line
-from .exceptions import ValueWarning, NotReadyError
-
-logger = logging.getLogger(__name__)
+from ..basic import Box, Vector, Line
+from ..base import iszero
+from ..exceptions import ValueWarning, NotReadyError
 
 
 def must_be_initialized(fun):
@@ -56,11 +53,25 @@ class Path:
     @must_be_initialized
     def advance(self, delta: Vector):
         """Place next segment of the path at given difference from current head"""
-        if len(delta) == 0:
+        if iszero(delta.length):
             return
 
-        self.head = self.head + delta
-        self.points.append(self.head)
+        self.points.append(self.head + delta)
+
+    @must_be_initialized
+    def head_towards(self, point: Vector, delta: float):
+        """
+        Place next pieces of the path at delta distances going towards the point. The last
+        segment may be shorter
+
+        :param point: point to advance towards
+        :param delta: size of step to use in constructing the path
+        """
+        while point != self.head:
+            vector_towards = (point - self.head)
+            if vector_towards.length < delta:
+                return self.advance(vector_towards)
+            self.advance(vector_towards.unitize() * delta)
 
     def __getitem__(self, item: int) -> Vector:
         return self.points[item]
