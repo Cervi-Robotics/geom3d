@@ -1,6 +1,6 @@
 # v0.4
 
-* _TBA_
+* fixed installation dependencies
 
 # v0.3
 
