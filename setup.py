@@ -3,6 +3,7 @@ from snakehouse import Multibuild, build
 from setuptools import Extension
 
 ext_modules = build([
+      Extension('geom3d.base', ['geom3d/base.pyx']),
       Extension('geom3d.basic', ['geom3d/basic.pyx']),
       Extension('geom3d.polygons.twodimensional', ['geom3d/polygons/twodimensional.pyx']),
       Extension('geom3d.paths.polygon', ['geom3d/paths/polygon.pyx']),

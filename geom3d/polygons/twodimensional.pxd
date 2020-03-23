@@ -16,7 +16,7 @@ cdef class Polygon2D:
                                       double offset=*)
     cpdef Line get_next_segment(self, Line segment)
     cpdef Line get_previous_segment(self, Line segment)
-    cdef char contains(self, Vector p)
+    cdef char contains(self, Vector p)        # type: (Vector) -> bool
     cpdef double get_signed_area(self)
     cpdef Line get_nth_segment(self, Line segment, int n)
     cpdef double get_surface_area(self)

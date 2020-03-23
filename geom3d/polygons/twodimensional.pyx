@@ -3,15 +3,12 @@ from libc.math cimport fabs
 import itertools
 import typing as tp
 
-from dataclasses import dataclass
-
-from satella.coding import precondition
-from satella.coding.sequences import add_next, skip_first, shift
+from satella.coding.sequences import add_next, shift
 
 from ..basic cimport Line, Vector
 from ..paths import Path
 
-from geom3d import base
+from geom3d.base cimport isclose, iszero, true_modulo, EPSILON
 
 
 cdef class Polygon2D:
@@ -236,16 +233,16 @@ cdef class PointOnPolygon2D:
         return self.get_distance_from_start()
 
     cdef double get_distance_from_start(self):
-        return base.true_modulo(self._distance_from_start + self.offset, self.polygon.total_perimeter_length)
+        return true_modulo(self._distance_from_start + self.offset, self.polygon.total_perimeter_length)
 
-    cpdef char is_on_vertex(self):
+    cpdef char is_on_vertex(self):      # type: () -> bool
         """Does this point occur right on a vertex of the polygon?"""
         cdef:
             double remaining_distance = self.distance_from_start
             double length
 
         for length in itertools.cycle(self.polygon.len_segments):
-            if base.iszero(remaining_distance):
+            if iszero(remaining_distance):
                 return True
             if remaining_distance < length:
                 return False
@@ -312,7 +309,7 @@ cdef class PointOnPolygon2D:
 
         cdef:
             Vector point = Vector(common_vec.y, -common_vec.x)     # construct orthogonal unit vector
-            double epsilon = base.EPSILON
+            double epsilon = EPSILON
 
         while True:
             if vec.add(point.mul(epsilon)) in self.polygon:
@@ -324,7 +321,7 @@ cdef class PointOnPolygon2D:
     cpdef Vector get_unit_vector_away_polygon(self):
         """
         Return exactly the opposite vector that
-        :func:`~geom3d.polygons.PointOnPolygon2D.get_unit_vector_towards_polygon`
+        :func:`~PointOnPolygon2D.get_unit_vector_towards_polygon`
         would return
         """
         return self.get_unit_vector_towards_polygon().neg()

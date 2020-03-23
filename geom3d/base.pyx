@@ -1,34 +1,23 @@
+import cython
 
 # Please redefine epsilon if you find it too little
 # This is used for math.isclose(abs_tol=) calculations too
 import math
 
-EPSILON = 0.01
+cdef double EPSILON = 0.01
 
 # Use it only like
 # >>> from . import base
 # >>> base.EPSILON
 
 
-def isclose(a: float, b: float) -> bool:
-    """
-    Are the two numbers equal according to local epsilon?
-    """
-    return math.isclose(a, b, abs_tol=EPSILON)
-
-
-def true_modulo(a: float, b: float) -> float:
+@cython.cdivision(False)
+cpdef double true_modulo(double a, double b):
+    # we care about getting Python's modulo here
     return a % b
 
 
-def iszero(a: float) -> bool:
-    """
-    Is a zero according to local epsilon?
-    """
-    return isclose(a, 0)
-
-
-def set_epsilon(new_epsilon: float):
+cpdef void set_epsilon(double new_epsilon):
     """
     Set a new value of epsilon.
 
