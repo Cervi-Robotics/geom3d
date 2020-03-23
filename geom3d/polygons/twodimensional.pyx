@@ -8,7 +8,7 @@ from satella.coding.sequences import add_next, shift
 from ..basic cimport Line, Vector
 from ..paths import Path
 
-from geom3d.base cimport isclose, iszero, true_modulo, EPSILON
+from geom3d.base cimport iszero, true_modulo, EPSILON
 
 
 cdef class Polygon2D:

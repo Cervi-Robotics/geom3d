@@ -1,53 +1,74 @@
-from __future__ import annotations
+from libc.math cimport cos, M_PI, sqrt, fabs
 
 import logging
 import math
 import collections.abc
 import typing as tp
-from dataclasses import dataclass
 
+from .planets cimport Earth, Planet
 from .planets import Earth, Planet
-from ..basic import Vector
+from geom3d.basic cimport Vector
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class XYPoint:
-    avg_lat: tp.Optional[float] = None  # + is N, - is W, used for transforming to coordinates
-    x: float  # computed from longitude, in metres
-    y: float  # computed from latitude, in metres
-    parent_collection: tp.Optional[XYPointCollection] = None
+cdef inline double to_radians(double degrees):
+    return degrees * (M_PI / 180.0)
 
-    def to_coordinates(self, planet: Planet = Earth(), avg_lat: tp.Optional[float] = None) -> Coordinates:
-        """Convert back to coordinates"""
+
+cdef class XYPoint:
+    def __init__(self, avg_lat: tp.Optional[float], x: float, y: float):
         if avg_lat is None:
-            if self.avg_lat is None:
-                raise ValueError('You must specify average latitude!')
-            avg_lat = self.avg_lat
+            self.is_avg_lat_set = False
+        else:
+            self.is_avg_lat_set = True
+            self.avg_lat = avg_lat
+        self.x = x
+        self.y = y
 
-        lon_tot_len = 2 * math.pi * planet.radius_at_equator * math.cos(math.radians(avg_lat))
-        x_to_lon = 360 / lon_tot_len
-        y_to_lat = 360 / planet.circumference_at_pole
+    cpdef Coordinates to_coordinates(self, Planet planet = Earth(), avg_lat=None):
+        cdef double real_avg_lat
+        if avg_lat is None:
+            if not self.is_avg_lat_set:
+                raise ValueError('You must specify average latitude!')
+            real_avg_lat = self.avg_lat
+        else:
+            real_avg_lat = avg_lat
+
+        cdef double lon_tot_len = 2 * M_PI * planet.radius_at_equator * cos(to_radians(real_avg_lat))
+        cdef double x_to_lon = 360 / lon_tot_len
+        cdef double y_to_lat = 360 / planet.circumference_at_pole
         return Coordinates(self.x * x_to_lon, self.y * y_to_lat)
 
     @classmethod
     def from_vector(cls, x: Vector) -> XYPoint:
         return XYPoint(x=x.x, y=x.y)
 
-    def to_vector(self) -> Vector:
+    cpdef Vector to_vector(self):
         """Convert self into a vector. The z axis will be set to zero."""
         return Vector(self.x, self.y)
 
-    def distance(self, other: tp.Union[Vector, XYPoint]) -> float:
+    cpdef double distance(self, object other):  # type: (tp.Union[Vector, XYPoint])
         """Calculate distance to the other point or vector"""
-        return math.sqrt(math.pow(self.x - other.x, 2) + math.pow(self.y, other.y))
+        cdef double x = self.x - other.x
+        x = x*x
+        cdef double y = self.y - other.y
+        y = y*y
+        return sqrt(x+y)
+
+    cpdef XYPoint add(self, object other):
+        return XYPoint(None if not self.is_avg_lat_set else self.avg_lat, self.x + other.x,
+                       self.y + other.y)
 
     def __add__(self, other: tp.Union[Vector, XYPoint]) -> XYPoint:
-        return XYPoint(self.avg_lat, self.x + other.x, self.y + other.y)
+        return self.add(other)
+
+    cpdef XYPoint sub(self, object other):
+        return XYPoint(None if not self.is_avg_lat_set else self.avg_lat, self.x - other.x,
+                       self.y - other.y)
 
     def __sub__(self, other: tp.Union[Vector, XYPoint]) -> XYPoint:
-        return XYPoint(self.avg_lat, self.x - other.x, self.y - other.y)
+        return self.sub(other)
 
     def __iadd__(self, other: tp.Union[Vector, XYPoint]) -> XYPoint:
         self.x += other.x
@@ -60,10 +81,12 @@ class XYPoint:
         return self
 
 
-@dataclass
-class Coordinates:
-    lat: float  # + is N, - is W
-    lon: float  # + is E, - is W
+
+cdef class Coordinates:
+
+    def __init__(self, lat: float, lon: float):
+        self.lat = lat
+        self.lon = lon
 
     def to_xy_point(self, planet: Planet = Earth()) -> XYPoint:
         """
@@ -75,16 +98,8 @@ class Coordinates:
         return XYPointCollection([self], planet)[0]
 
 
-def avg(x: tp.Iterable[float]) -> float:
-    count = 0
-    sum_ = 0.0
-    for f in x:
-        sum_ += f
-        count += 1
-    return sum_ / count
 
 
-@dataclass
 class XYPointCollection(collections.abc.Sequence):
     """
     A tool to convert a set of coordinates to (x,y) grid.
@@ -109,19 +124,19 @@ class XYPointCollection(collections.abc.Sequence):
             raise ValueError('Specify at least a single coordinate')
         self.planet = planet
         self.avg_lat = avg(coord.lat for coord in coords)
-        lon_tot_len = 2 * math.pi * planet.radius_at_equator * math.cos(math.radians(self.avg_lat))
+        cdef double lon_tot_len = 2 * M_PI * planet.radius_at_equator * cos(to_radians(self.avg_lat))
         self.lon_to_x = lon_tot_len / 360
         self.lat_to_y = planet.circumference_at_pole / 360
         self.points = [XYPoint(self.avg_lat, self.lon_to_x * coord.lon,
                                self.lat_to_y * coord.lat, self) for coord in coords]
 
         # Calculate maximum error
-        pes_lat = max((coord.lat for coord in coords), key=lambda x: abs(x - self.avg_lat))
-        lon_at_dev = 2 * math.pi * planet.radius_at_equator * math.cos(math.radians(pes_lat))
-        difference = abs(lon_tot_len - lon_at_dev)
+        cdef double pes_lat = max((coord.lat for coord in coords), key=lambda x: abs(x - self.avg_lat))
+        cdef double lon_at_dev = 2 * M_PI * planet.radius_at_equator * cos(to_radians(pes_lat))
+        cdef double difference = fabs(lon_tot_len - lon_at_dev)
         self.maximum_latitudinal_error_per_degree = difference / 360
-        diff = abs(pes_lat - self.avg_lat)
-        self.maximum_absolute_error = abs(diff) * self.maximum_latitudinal_error_per_degree
+        cdef double diff = fabs(pes_lat - self.avg_lat)
+        self.maximum_absolute_error = fabs(diff) * self.maximum_latitudinal_error_per_degree
 
     def translate(self, x: Coordinates) -> XYPoint:
         """

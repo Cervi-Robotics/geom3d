@@ -10,6 +10,8 @@ lock
 *.pyd
 *.so
 *.c
+*.h
+__bootstrap__.*
 .eggs
 bin/
 tmp/
