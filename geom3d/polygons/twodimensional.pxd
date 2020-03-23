@@ -9,6 +9,7 @@ cdef class Polygon2D:
         public double total_perimeter_length
         public double half_of_shortest_segment
 
+    cdef Vector get_centroid(self)
     cpdef Line get_segment_at_distance(self, double offset)
     cpdef PointOnPolygon2D get_point_on_polygon(self, double distance_from_start, double offset=*)
     cpdef PointOnPolygon2D get_point_on_polygon_relative(self, double distance_from_start,

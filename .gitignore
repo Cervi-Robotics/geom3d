@@ -7,6 +7,9 @@ hs_err_pid*.log
 .project
 .metadata
 lock
+*.pyd
+*.so
+*.c
 .eggs
 bin/
 tmp/

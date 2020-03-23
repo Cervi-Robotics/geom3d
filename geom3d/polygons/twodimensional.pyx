@@ -96,15 +96,23 @@ cdef class Polygon2D:
         """Return the surface area of this polygon"""
         return fabs(self.get_signed_area())
 
+    cdef Vector get_centroid(self):
+        cdef:
+            double sa = self.get_signed_area()
+            double x = 0
+            double y = 0
+            Vector p0
+            Vector p1
+
+        for p0, p1 in add_next(self.points, wrap_over=True):
+            x += (p0.x + p1.x) * (p0.x * p1.y - p1.x * p0.y)
+            y += (p0.y + p1.y) * (p0.x * p1.y - p1.x * p0.y)
+        return Vector(x/6*sa, y/6*sa)
+
     @property
     def centroid(self) -> Vector:
         """Return the center of mass for this polygon"""
-        sa = self.get_signed_area()
-        x = sum((p0.x + p1.x) * (p0.x * p1.y - p1.x * p0.y) for p0, p1 in
-                add_next(self.points, wrap_over=True)) / (6*sa)
-        y = sum((p0.y + p1.y) * (p0.x * p1.y - p1.x * p0.y) for p0, p1 in
-                add_next(self.points, wrap_over=True)) / (6*sa)
-        return Vector(x, y)
+        return self.get_centroid()
 
     def iter_from(self, offset: float = 0) -> tp.Iterator[Vector]:
         """
@@ -121,11 +129,12 @@ cdef class Polygon2D:
         return iter(self.points)
 
     cdef char contains(self, Vector p):
-        cdef double max_x = self.points[0].x
-        cdef double min_x = self.points[0].x
-        cdef double max_y = self.points[0].y
-        cdef double min_y = self.points[0].y
-        cdef Vector point
+        cdef:
+            double max_x = self.points[0].x
+            double min_x = self.points[0].x
+            double max_y = self.points[0].y
+            double min_y = self.points[0].y
+            Vector point
 
         for point in self.points[1:]:
             if point.x < min_x:
@@ -140,9 +149,11 @@ cdef class Polygon2D:
         if (p.x < min_x) or (p.x > max_x) or (p.y < min_y) or (p.y > max_y):
             return False
 
-        cdef char inside = False
-        cdef Vector next_point
-        cdef Vector prev_point
+        cdef:
+            char inside = False
+            Vector next_point
+            Vector prev_point
+
         for next_point, prev_point in add_next(self, wrap_over=True):
             if (next_point.y > p.y) != (prev_point.y > p.y) and p.x < (
                     prev_point.x - next_point.x) * (p.y - next_point.y) / (
@@ -229,8 +240,10 @@ cdef class PointOnPolygon2D:
 
     cpdef char is_on_vertex(self):
         """Does this point occur right on a vertex of the polygon?"""
-        cdef double remaining_distance = self.distance_from_start
-        cdef double length
+        cdef:
+            double remaining_distance = self.distance_from_start
+            double length
+
         for length in itertools.cycle(self.polygon.len_segments):
             if base.iszero(remaining_distance):
                 return True
@@ -264,9 +277,11 @@ cdef class PointOnPolygon2D:
 
         :return: a tuple of (Line - the segment, Vector - coordinates of this point)
         """
-        cdef double remaining_distance = self.distance_from_start
-        cdef Line segment
-        cdef double seg_length
+        cdef:
+            double remaining_distance = self.distance_from_start
+            Line segment
+            double seg_length
+
         for segment, seg_length in zip(self.polygon.iter_segments(), self.polygon.len_segments):
             if seg_length > remaining_distance:
                 return segment, segment.get_point(remaining_distance).to_vector()
@@ -277,12 +292,14 @@ cdef class PointOnPolygon2D:
         """
         Get a unit vector, that if applied to self.to_vector() would direct us inside the polygon
         """
-        cdef Line segment
-        cdef Line prev
-        cdef Vector unit_vec
-        cdef Vector prev_unit_vec
-        cdef Vector common_vec
-        cdef Vector vec
+        cdef:
+            Line segment
+            Line prev
+            Vector unit_vec
+            Vector prev_unit_vec
+            Vector common_vec
+            Vector vec
+
         segment, vec = self.get_segment_and_vector()
         if self.is_on_vertex():
             # In that case we have returned the second segment
@@ -292,9 +309,11 @@ cdef class PointOnPolygon2D:
             common_vec = unit_vec.add(prev_unit_vec).unitize()
         else:
             common_vec = segment.unit_vector
-        cdef Vector point = Vector(common_vec.y, -common_vec.x)     # construct orthogonal unit vector
 
-        cdef double epsilon = base.EPSILON
+        cdef:
+            Vector point = Vector(common_vec.y, -common_vec.x)     # construct orthogonal unit vector
+            double epsilon = base.EPSILON
+
         while True:
             if vec.add(point.mul(epsilon)) in self.polygon:
                 return point

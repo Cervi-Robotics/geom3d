@@ -5,7 +5,7 @@ from .path import Path
 
 
 cpdef object cover_polygon2d_with_path(Polygon2D polygon, Vector box, double step_downscale,
-                              double step_advance, double start_at):
+                              double step_advance, double start_at):        # type: (...) -> Path
     """Build a path covering the entire polygon. This will try to build a spiral with flat down
     advancements at the end of each perimeter.
 
