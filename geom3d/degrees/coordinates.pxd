@@ -3,15 +3,6 @@ from geom3d.basic cimport Vector
 from .planets cimport Planet
 
 
-cdef inline double avg(list x):
-    cdef double count = 0
-    cdef double sum_ = 0.0
-    for f in x:
-        sum_ += f
-        count += 1
-    return sum_ / count
-
-
 cdef class XYPoint:
     cdef:
         double avg_lat

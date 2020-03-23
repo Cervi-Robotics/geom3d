@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 from snakehouse import Multibuild, build
 from setuptools import Extension
 
@@ -17,7 +17,7 @@ ext_modules = build([
 })
 
 setup(keywords=['geometry', '3d', 'flight', 'path'],
-      packages=find_packages(include=['geom3d', 'geom3d.*']),
+      packages=['geom3d', 'geom3d.degrees', 'geom3d.meshes', 'geom3d.paths', 'geom3d.polygons'],
       version='0.3_a1',
       install_requires=[
             'satella', 'Cython'

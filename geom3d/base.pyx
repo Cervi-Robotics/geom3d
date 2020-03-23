@@ -2,13 +2,8 @@ import cython
 
 # Please redefine epsilon if you find it too little
 # This is used for math.isclose(abs_tol=) calculations too
-import math
 
 cdef double EPSILON = 0.01
-
-# Use it only like
-# >>> from . import base
-# >>> base.EPSILON
 
 
 @cython.cdivision(False)

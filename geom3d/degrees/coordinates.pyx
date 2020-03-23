@@ -15,6 +15,15 @@ logger = logging.getLogger(__name__)
 cdef inline double to_radians(double degrees):
     return degrees * (M_PI / 180.0)
 
+cdef inline double avg(list x):
+    cdef double count = 0
+    cdef double sum_ = 0.0
+    cdef double f
+    for f in x:
+        sum_ += f
+        count += 1
+    return sum_ / count
+
 
 cdef class XYPoint:
     def __init__(self, avg_lat: tp.Optional[float], x: float, y: float):
