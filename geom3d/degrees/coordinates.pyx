@@ -1,15 +1,11 @@
 from libc.math cimport cos, M_PI, sqrt, fabs
 
-import logging
-import math
 import collections.abc
 import typing as tp
 
 from .planets cimport Earth, Planet
 from .planets import Earth, Planet
 from geom3d.basic cimport Vector
-
-logger = logging.getLogger(__name__)
 
 
 cdef inline double to_radians(double degrees):
@@ -153,8 +149,8 @@ class XYPointCollection(collections.abc.Sequence):
 
         Also, appends the given point to self.points
         """
-        xy_point = XYPoint(self.avg_lat, self.lon_to_x * x.lon,
-                           self.lat_to_y * x.lat)
+        cdef XYPoint xy_point = XYPoint(self.avg_lat, self.lon_to_x * x.lon,
+                                        self.lat_to_y * x.lat)
         self.points.append(xy_point)
         return xy_point
 
