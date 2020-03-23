@@ -1,3 +1,7 @@
+# v0.4
+
+* _TBA_
+
 # v0.3
 
 * rewritten to use Cython
