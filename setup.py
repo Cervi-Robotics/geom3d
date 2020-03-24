@@ -18,7 +18,7 @@ ext_modules = build([
 
 setup(keywords=['geometry', '3d', 'flight', 'path'],
       packages=['geom3d', 'geom3d.degrees', 'geom3d.meshes', 'geom3d.paths', 'geom3d.polygons'],
-      version='0.4_a2',
+      version='0.4_a3',
       install_requires=[
             'satella',
       ],
