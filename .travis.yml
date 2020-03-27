@@ -2,20 +2,26 @@ stages:
   - name: test
   - name: deploy
     if: branch = master
+language: python
 jobs:
   include:
     - stage: test
-      language: python
+      python: "3.5"
+      script:
+        - bash tests/test.sh
+    - stage: test
+      python: "3.6"
+      script:
+        - bash tests/test.sh
+    - stage: test
       python: "3.7"
       script:
         - bash tests/test.sh
     - stage: test
-      language: python
       python: "3.8"
       script:
         - bash tests/test.sh
     - stage: test
-      language: python
       python: "nightly"
       script:
         - bash tests/test.sh
