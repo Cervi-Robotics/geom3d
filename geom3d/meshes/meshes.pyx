@@ -7,7 +7,7 @@ from ..basic cimport Vector, Line
 logger = logging.getLogger(__name__)
 
 
-class Triangle:
+cdef class Triangle:
     """
     A triangle defined by it's 3 vertices
     """

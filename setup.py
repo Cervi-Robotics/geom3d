@@ -10,7 +10,7 @@ ext_modules = build([
       Extension('geom3d.paths.nonintersecting', ['geom3d/paths/nonintersecting.pyx']),
       Extension('geom3d.polygons.twodimensional', ['geom3d/polygons/twodimensional.pyx']),
       Extension('geom3d.paths.polygon', ['geom3d/paths/polygon.pyx']),
-      Multibuild('geom3d.meshes', ['geom3d/meshes/meshes.pyx']),
+      Extension('geom3d.meshes.meshes', ['geom3d/meshes/meshes.pyx']),
 ], compiler_directives={
       'language_level': '3'
 })
