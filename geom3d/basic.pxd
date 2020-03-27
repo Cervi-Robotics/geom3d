@@ -21,6 +21,10 @@ cdef class Vector:
     cpdef Vector truediv(self, double other)
     cdef double get_length(self)
 
+    cdef inline double distance_to(self, Vector other):
+        return self.sub(other).get_length()
+
+
 
 cpdef inline Vector add(Vector self, Vector other):
     return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
@@ -44,25 +48,27 @@ cdef inline double get_length(Vector self):
     return sqrt(self.x*self.x + self.y*self.y + self.z*self.z)
 
 
-cdef class PointInLine:
+cdef class PointOnLine:
     cdef:
         readonly Line line
-        public double distance_from_start
+        public double length
 
     cpdef Vector to_vector(self)
-    cdef double get_length(self)
-    cpdef PointInLine sub(self, double other)
-    cpdef PointInLine add(self, double other)
+    cpdef PointOnLine sub(self, double other)
+    cpdef PointOnLine add(self, double other)
+    cdef double get_relative_position(self)
 
 
 cdef class Line:
     cdef:
         readonly Vector start
         readonly Vector stop
-        readonly Vector _unit_vector
-        readonly double _length
+        readonly Vector unit_vector
+        readonly double length
 
-    cpdef PointInLine get_point(self, double distance_from_start)
+    cdef double distance_to_line(self, Vector vector)
+    cpdef PointOnLine get_point(self, double distance_from_start)
+    cpdef PointOnLine get_point_relative(self, double distance_from_start)
 
 
 cdef class Box:

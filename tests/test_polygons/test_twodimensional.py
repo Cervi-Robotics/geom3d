@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 class TestPolygon2D(unittest.TestCase):
+    def test_point_closest(self):
+        poly = Polygon2D([Vector(0, 0, 0), Vector(1, 0, 0), Vector(1, 1, 0)])
+        self.assertLess(abs(poly.get_closest_to(Vector(0.5, -0.5, 0), 100))-0.5, 0.1)
+
     def test_point_contains(self):
         poly = Polygon2D([Vector(0, 0, 0), Vector(1, 0, 0), Vector(1, 1, 0)])
         self.assertIn(Vector(0.5, 0.5, 0), poly)

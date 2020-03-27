@@ -21,7 +21,7 @@ cdef class Polygon2D:
     cpdef Line get_nth_segment(self, Line segment, int n)
     cpdef double get_surface_area(self)
     cpdef Polygon2D downscale(self, double step)
-
+    cpdef float get_closest_to(self, Vector vec, int iterations=*)
 
 cdef class PointOnPolygon2D:
     cdef:

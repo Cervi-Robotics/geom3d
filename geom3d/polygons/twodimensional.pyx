@@ -5,7 +5,7 @@ import typing as tp
 
 from satella.coding.sequences import add_next, shift
 
-from ..basic cimport Line, Vector, add, sub, mul, neg
+from ..basic cimport Line, Vector, add, sub, mul, neg, PointOnLine
 from ..paths import Path
 
 from geom3d.base cimport iszero, true_modulo, EPSILON
@@ -35,6 +35,18 @@ cdef class Polygon2D:
                 raise ValueError('Polygon cannot be shrunk further!')
         points = points[-1:] + points[:-1]      # since the first point was reported last...
         return Polygon2D(points)
+
+    def iter_lengths(self) -> tp.Iterator[float]:
+        """
+        Return an iterator returning lengths from the start along the perimeter to given vertex of the polygon.
+        
+        First point is zero.
+        """
+        cdef double tot_length = 0
+        cdef double seg_length
+        for seg_length in self.len_segments:
+            yield tot_length
+            tot_length += seg_length
 
     def to_path(self, step: float, size: Vector) -> Path:
         """
@@ -176,6 +188,39 @@ cdef class Polygon2D:
     cpdef Line get_previous_segment(self, Line segment):
         """Return the previous segment in regards to the one currently passed"""
         return self.get_nth_segment(segment, -1)
+
+    cpdef float get_closest_to(self, Vector vec, int iterations = 10):
+        """
+        Get the length along the perimeter of a perimeter point closest to vec
+        
+        :param vec: Vector to which returned point on the perimeter of the polygon has to be the closest
+        :param iterations: the iterations. The greater the number the slower it runs, but the better the result is
+        """
+        cdef PointOnPolygon2D pop2d = self.get_point_on_polygon(0, 0)
+        cdef list distances = [vec.distance_to(vex) for vex in self]
+        cdef list segments = list(zip(shift(distances, 1), distances))
+        cdef list sum_of_distances = [(sum(ab[0], ab[1]), i) for i, ab in enumerate(segments)]
+        cdef Line segment = self.segments[min(sum_of_distances)[1]]
+        cdef int i = 0
+        cdef double cur_ran_start = 0 
+        cdef double cur_ran_stop = 1
+        cdef PointOnLine pol1, pol2
+        cdef double cur_ran_half
+        for i in range(iterations):
+            cur_ran_half = (cur_ran_start + cur_ran_stop) / 2
+            pol1 = segment.get_point_relative((cur_ran_start+cur_ran_half)/2)
+            pol2 = segment.get_point_relative((cur_ran_stop+cur_ran_half)/2)
+            if pol1.to_vector().distance_to(vec) < pol2.to_vector().distance_to(vec):
+                cur_ran_stop = cur_ran_half
+            else:
+                cur_ran_start = cur_ran_half
+        cdef double dist
+        cdef int j
+        for j in range(i):
+            dist += self.len_segments[j]
+        return dist + cur_ran_half
+
+
 
     cpdef PointOnPolygon2D get_point_on_polygon_relative(self, double distance_from_start,
                                       double offset = 0):

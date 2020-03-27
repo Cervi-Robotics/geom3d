@@ -41,7 +41,7 @@ Note that you first need to set a satisfying epsilon:
 .. autoclass:: geom3d.Line
     :members:
 
-.. autoclass:: geom3d.PointInLine
+.. autoclass:: geom3d.PointOnLine
     :members:
 
 .. autoclass:: geom3d.Path
