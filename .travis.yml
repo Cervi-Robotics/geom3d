@@ -5,26 +5,21 @@ jobs:
         - docker
       env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
            PLAT=manylinux1_x86_64
-           BUILD=true
-    - sudo: required
-      services:
-        - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_i686
-           PRE_CMD=linux32
-           PLAT=manylinux1_i686
-           BUILD=true
-    - sudo: required
-      services:
-        - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
-           PLAT=manylinux2010_x86_64
-           BUILD=true
-    - sudo: false
-      env: BUILD=false
       language: python
-      python:
-        - "3.7"
-        - "3.8"
-        - "nightly"
+      python: "3.7"
+    - sudo: required
+      services:
+        - docker
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
+           PLAT=manylinux1_x86_64
+      language: python
+      python: "3.8"
+    - sudo: required
+      services:
+        - docker
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
+           PLAT=manylinux1_x86_64
+      language: python
+      python: "nightly"
 script:
   - bash build.sh
