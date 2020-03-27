@@ -1,4 +1,3 @@
-language: python
 stages:
   - name: test
   - name: deploy
@@ -6,35 +5,41 @@ stages:
 jobs:
   include:
     - stage: test
+      language: python
       python: "3.7"
       script:
         - bash tests/test.sh
     - stage: test
+      language: python
       python: "3.8"
       script:
         - bash tests/test.sh
     - stage: test
+      language: python
       python: "nightly"
       script:
         - bash tests/test.sh
     - stage: deploy
       services:
         - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
+      env: LABEL="Building manylinux1 on x86_64"
+           DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
            PLAT=manylinux1_x86_64
       script:
         - bash tests/build.sh travis
     - stage: deploy
       services:
         - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
+      env: LABEL="Building manylinux2010 on x86_64"
+           DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
            PLAT=manylinux2010_x86_64
       script:
         - bash tests/build.sh travis
     - stage: deploy
       services:
         - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_i686
+      env: LABEL="Building manylinux1 on i686"
+           DOCKER_IMAGE=quay.io/pypa/manylinux1_i686
            PLAT=manylinux1_i686
       script:
         - bash tests/build.sh travis
