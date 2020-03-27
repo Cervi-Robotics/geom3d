@@ -1,6 +1,7 @@
-# v0.4
+# v0.4.1_a1
 
 * fixed installation dependencies
+* added automatic build using Travis CI
 
 # v0.3
 
