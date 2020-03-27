@@ -25,6 +25,9 @@ else
       auditwheel repair "$whl" --plat $PLAT -w /io/wheelhouse/
   done
 
+  yum update
+  yum install -y openssl-devel
+
   /opt/python/cp38-cp38/bin/pip install twine
   /opt/python/cp38-cp38/bin/twine upload -u "$PYPI_USER" -p "$PYPI_PWD" wheelhouse/geom3d-*manylinux*.whl
 fi
