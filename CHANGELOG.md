@@ -1,6 +1,8 @@
 # v0.4.1_a1
 
 * fixed installation dependencies
+* pip wheels will be built on Travis for Linux @ Python images
+    * the developer will continue to deliver Windows wheels manually
 * added automatic build using Travis CI
 
 # v0.3
