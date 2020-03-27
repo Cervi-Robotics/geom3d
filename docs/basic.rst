@@ -21,9 +21,11 @@ pronounced the closer you are to the Poles, so no flying over the Poles
 for you!
 
 .. autoclass:: geom3d.degrees.Planet
+    :members:
 
 .. autoclass:: geom3d.degrees.Earth
 
+.. autoclass:: geom3d.degrees.CustomPlanet
 
 Basic structures
 ================

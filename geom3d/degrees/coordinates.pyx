@@ -3,13 +3,10 @@ from libc.math cimport cos, M_PI, sqrt, fabs
 import collections.abc
 import typing as tp
 
-from .planets cimport Earth, Planet
+from .planets cimport Earth, Planet, to_radians
 from .planets import Earth, Planet
 from geom3d.basic cimport Vector
 
-
-cdef inline double to_radians(double degrees):
-    return degrees * (M_PI / 180.0)
 
 cdef inline double avg(list x):
     cdef double count = 0
@@ -129,7 +126,7 @@ class XYPointCollection(collections.abc.Sequence):
             raise ValueError('Specify at least a single coordinate')
         self.planet = planet
         self.avg_lat = avg(coord.lat for coord in coords)
-        cdef double lon_tot_len = 2 * M_PI * planet.radius_at_equator * cos(to_radians(self.avg_lat))
+        cdef double lon_tot_len = planet.get_circumference_at_latitude(self.avg_lat)
         self.lon_to_x = lon_tot_len / 360
         self.lat_to_y = planet.circumference_at_pole / 360
         self.points = [XYPoint(self.avg_lat, self.lon_to_x * coord.lon,
@@ -137,7 +134,7 @@ class XYPointCollection(collections.abc.Sequence):
 
         # Calculate maximum error
         cdef double pes_lat = max((coord.lat for coord in coords), key=lambda x: abs(x - self.avg_lat))
-        cdef double lon_at_dev = 2 * M_PI * planet.radius_at_equator * cos(to_radians(pes_lat))
+        cdef double lon_at_dev = planet.get_circumference_at_latitude(pes_lat)
         cdef double difference = fabs(lon_tot_len - lon_at_dev)
         self.maximum_latitudinal_error_per_degree = difference / 360
         cdef double diff = fabs(pes_lat - self.avg_lat)
