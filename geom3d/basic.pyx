@@ -5,7 +5,6 @@ from .base cimport iszero, isclose
 
 __all__ = ['Vector', 'Box', 'Line', 'PointInLine']
 
-
 cdef class Vector:
     """A 3D vector"""
     def __init__(self, x: float, y: float, z: float = 0):
@@ -26,41 +25,23 @@ cdef class Vector:
         """Calculate the dot product between this vector and the other"""
         return self.x * other.x + self.y * other.y + self.z * other.z
 
-    cpdef Vector add(self, Vector other):
-        return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
-
     def __add__(self, other: Vector) -> Vector:
-        return self.add(other)
-
-    cpdef Vector sub(self, Vector other):
-        return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
-
-    cpdef Vector neg(self):
-        return Vector(-self.x, -self.y, -self.z)
+        return add(self, other)
 
     def __neg__(self) -> Vector:
-        return self.neg()
+        return neg(self)
 
     def __sub__(self, other: Vector) -> Vector:
-        return self.sub(other)
-
-    cpdef Vector truediv(self, double other):
-        return Vector(self.x / other, self.y / other, self.z / other)
+        return sub(self, other)
 
     def __truediv__(self, other: float) -> Vector:
-        return self.truediv(other)
-
-    cpdef Vector mul(self, double other):
-        return Vector(self.x * other, self.y * other, self.z * other)
+        return truediv(self, other)
 
     def __mul__(self, other: float) -> Vector:
-        return self.mul(other)
-
-    cpdef Vector abs(self):
-        Vector(abs(self.x), abs(self.y), abs(self.z))
+        return mul(self, other)
 
     def __abs__(self) -> Vector:
-        return self.abs()
+        return vabs(self)
 
     cdef bint eq(self, Vector other):
         return isclose(self.x, other.x) and isclose(self.y, other.y) and \
@@ -75,10 +56,7 @@ cdef class Vector:
 
     @property
     def length(self) -> float:
-        return self.get_length()
-
-    cdef double get_length(self):
-        return sqrt(self.x*self.x+self.y*self.y+self.z*self.z)
+        return get_length(self)
 
     cpdef Vector unitize(self):
         """Return an unit vector having the same heading as current vector"""
@@ -113,6 +91,29 @@ cdef class Vector:
         return Vector(self.x if x is None else x,
                       self.y if y is None else y,
                       self.z if z is None else z)
+
+    cpdef Vector add(self, Vector other):
+        return add(self, other)
+
+    cpdef Vector sub(self, Vector other):
+        return sub(self, other)
+
+    cpdef Vector mul(self, double other):
+        return mul(self, other)
+
+    cpdef Vector neg(self):
+        return neg(self)
+
+    cpdef Vector vabs(self):
+        return vabs(self)
+
+    cpdef Vector truediv(self, double other):
+        return truediv(self, other)
+
+    cdef double get_length(self):
+        return get_length(self)
+
+
 
 
 cdef class PointInLine:

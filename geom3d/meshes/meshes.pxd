@@ -11,6 +11,6 @@ cdef class Triangle:
     cpdef object get_edges_length(self)       # type: () -> tp.Tuple[float, float, float]
     cpdef double get_perimeter_length(self)
     cpdef double get_surface_area(self)
-    cpdef list get_edges(self)                 # type () -> list of Line
+    cpdef object get_edges(self)               # type: () -> tp.Tuple[Line, Line, Line]
 
 

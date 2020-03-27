@@ -5,7 +5,7 @@ import typing as tp
 
 from satella.coding.sequences import add_next, shift
 
-from ..basic cimport Line, Vector
+from ..basic cimport Line, Vector, add, sub, mul, neg
 from ..paths import Path
 
 from geom3d.base cimport iszero, true_modulo, EPSILON
@@ -28,7 +28,7 @@ cdef class Polygon2D:
         for vector, segment_length in zip(shift(self.points, 1), self.len_segments):
             # so that point occurs on the end of n-th segment
             point.advance(segment_length)
-            points.append(vector.add(point.get_unit_vector_towards_polygon().mul(step)))
+            points.append(add(vector, mul(point.get_unit_vector_towards_polygon(), step)))
         cdef Vector point_p
         for point_p in points:
             if not point_p in self:
@@ -311,12 +311,15 @@ cdef class PointOnPolygon2D:
             Vector point = Vector(common_vec.y, -common_vec.x)     # construct orthogonal unit vector
             double epsilon = EPSILON
 
+        cdef Vector point2 = mul(point, epsilon)
+
         while True:
-            if vec.add(point.mul(epsilon)) in self.polygon:
+            if add(vec, point2) in self.polygon:
                 return point
-            elif vec.sub(point.mul(epsilon)) in self.polygon:
+            elif sub(vec, point2) in self.polygon:
                 return -point
             epsilon *= 0.1
+            point2 = mul(point2, 0.1)
 
     cpdef Vector get_unit_vector_away_polygon(self):
         """
@@ -324,4 +327,4 @@ cdef class PointOnPolygon2D:
         :func:`~PointOnPolygon2D.get_unit_vector_towards_polygon`
         would return
         """
-        return self.get_unit_vector_towards_polygon().neg()
+        return neg(self.get_unit_vector_towards_polygon())

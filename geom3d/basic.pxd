@@ -1,3 +1,5 @@
+from libc.math cimport fabs, sqrt
+
 cdef class Vector:
     cdef:
         readonly double x
@@ -9,14 +11,37 @@ cdef class Vector:
     cpdef Vector update(self, object x, object y, object z)
     cpdef Vector unitize(self)
     cpdef Vector zero_z(self)
+    cdef bint eq(self, Vector other)
+
     cpdef Vector add(self, Vector other)
     cpdef Vector sub(self, Vector other)
     cpdef Vector mul(self, double other)
     cpdef Vector neg(self)
-    cpdef Vector abs(self)
-    cdef bint eq(self, Vector other)
+    cpdef Vector vabs(self)
     cpdef Vector truediv(self, double other)
     cdef double get_length(self)
+
+
+cpdef inline Vector add(Vector self, Vector other):
+    return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
+
+cpdef inline Vector sub(Vector self, Vector other):
+    return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
+
+cpdef inline Vector mul(Vector self, double other):
+    return Vector(self.x*other, self.y*other, self.z*other)
+
+cpdef inline Vector neg(Vector self):
+    return Vector(-self.x, -self.y, -self.z)
+
+cpdef inline Vector vabs(Vector self):
+    return Vector(fabs(self.x), fabs(self.y), fabs(self.z))
+
+cpdef inline Vector truediv(Vector self, double other):
+    return Vector(self.x / other, self.y / other, self.z / other)
+
+cdef inline double get_length(Vector self):
+    return sqrt(self.x*self.x + self.y*self.y + self.z*self.z)
 
 
 cdef class PointInLine:

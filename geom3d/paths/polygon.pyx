@@ -25,10 +25,10 @@ cpdef object cover_polygon2d_with_path(Polygon2D polygon, Vector box, double ste
     while True:
         for point in polygon.iter_from(start_at*polygon.total_perimeter_length):
             path.head_towards(point, step_advance)
-        path.head_towards(polygon.get_point_on_polygon(offset).to_vector())
+        path.head_towards(polygon.get_point_on_polygon(offset).to_vector(), step_advance)
         try:
             polygon = polygon.downscale(step_downscale)
         except ValueError:
             return path
         offset = polygon.total_perimeter_length * start_at
-        path.head_towards(polygon.get_point_on_polygon(offset).to_vector())
+        path.head_towards(polygon.get_point_on_polygon(offset).to_vector(), step_advance)
