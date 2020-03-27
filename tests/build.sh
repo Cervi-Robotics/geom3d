@@ -4,7 +4,10 @@ set -x
 set -e
 
 if [ "$1" == "travis" ]; then
-  docker run --rm -it -e PLAT=$PLAT -e PYPI_USER="$PYPI_USER" -e PYPI_PWD="$PYPI_PWD" -v `pwd`:/io "$DOCKER_IMAGE" bash /io/tests/build.sh
+  docker run --rm -it -e PLAT=$PLAT -v `pwd`:/io "$DOCKER_IMAGE" bash /io/tests/build.sh
+
+  pip install twine
+  twine upload -u "$PYPI_USER" -p "$PYPI_PWD" wheelhouse/geom3d-*manylinux*.whl
 else
   # Executed in target dockerized CentOS 5 environment
   rm -rf /opt/python/cp27-cp27m
@@ -24,10 +27,4 @@ else
   for whl in wheelhouse/*.whl; do
       auditwheel repair "$whl" --plat $PLAT -w /io/wheelhouse/
   done
-
-  yum update
-  yum install -y openssl-devel
-
-  /opt/python/cp38-cp38/bin/pip install twine
-  /opt/python/cp38-cp38/bin/twine upload -u "$PYPI_USER" -p "$PYPI_PWD" wheelhouse/geom3d-*manylinux*.whl
 fi
