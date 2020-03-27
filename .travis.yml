@@ -1,25 +1,43 @@
+language: python
+stages:
+  - name: test
+  - name: deploy
+    if: branch = master
 jobs:
   include:
-    - sudo: required
-      services:
-        - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
-           PLAT=manylinux1_x86_64
-      language: python
+    - stage: test
       python: "3.7"
-    - sudo: required
-      services:
-        - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
-           PLAT=manylinux1_x86_64
-      language: python
+      script:
+        - bash tests/test.sh
+    - stage: test
       python: "3.8"
+      script:
+        - bash tests/test.sh
+    - stage: test
+      python: "nightly"
+      script:
+        - bash tests/test.sh
     - sudo: required
+      stage: deploy
       services:
         - docker
       env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
            PLAT=manylinux1_x86_64
-      language: python
-      python: "nightly"
-script:
-  - bash build.sh
+      script:
+        - bash build.sh
+    - sudo: required
+      stage: deploy
+      services:
+        - docker
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
+           PLAT=manylinux1_x86_64
+      script:
+        - bash build.sh
+    - sudo: required
+      stage: deploy
+      services:
+        - docker
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
+           PLAT=manylinux1_x86_64
+      script:
+        - bash build.sh
