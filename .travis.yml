@@ -22,7 +22,7 @@ jobs:
     - stage: deploy
       services:
         - docker
-      env: LABEL="Building manylinux1 on x86_64"
+      env: L="Building manylinux1 on x86_64"
            DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
            PLAT=manylinux1_x86_64
       script:
@@ -30,7 +30,7 @@ jobs:
     - stage: deploy
       services:
         - docker
-      env: LABEL="Building manylinux2010 on x86_64"
+      env: L="Building manylinux2010 on x86_64"
            DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
            PLAT=manylinux2010_x86_64
       script:
@@ -38,7 +38,7 @@ jobs:
     - stage: deploy
       services:
         - docker
-      env: LABEL="Building manylinux1 on i686"
+      env: L="Building manylinux1 on i686"
            DOCKER_IMAGE=quay.io/pypa/manylinux1_i686
            PLAT=manylinux1_i686
       script:
