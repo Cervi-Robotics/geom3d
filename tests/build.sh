@@ -22,13 +22,6 @@ else
       auditwheel repair "$whl" --plat $PLAT -w /io/wheelhouse/
   done
 
-  # Install packages and test
-  for PYBIN in /opt/python/*/bin/; do
-      "${PYBIN}/pip" install geom3d --no-index -f /io/wheelhouse
-      (cd "$HOME"; "${PYBIN}/nosetests" pymanylinuxdemo)
-  done
-
-  pip install twine
-  twine upload -u "$PYPI_USER" -p "$PYPI_PWD" wheelhouse/*
-
+  /opt/python/cp38-cp38/bin/pip install twine
+  /opt/python/cp38-cp38/bin/twine upload -u "$PYPI_USER" -p "$PYPI_PWD" wheelhouse/*
 fi
