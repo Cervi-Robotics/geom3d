@@ -27,14 +27,14 @@ jobs:
     - stage: deploy
       services:
         - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
-           PLAT=manylinux1_x86_64
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
+           PLAT=manylinux2010_x86_64
       script:
         - bash tests/build.sh travis
     - stage: deploy
       services:
         - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
-           PLAT=manylinux1_x86_64
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_i686
+           PLAT=manylinux1_i686
       script:
         - bash tests/build.sh travis
