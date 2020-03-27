@@ -1,2 +1,4 @@
+from geom3d.paths.__bootstrap__ import bootstrap_cython_submodules
+bootstrap_cython_submodules()
 from .path import Path
 from .polygon import cover_polygon2d_with_path

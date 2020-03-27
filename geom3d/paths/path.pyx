@@ -1,10 +1,9 @@
-from __future__ import annotations
 import warnings
 import functools
 import typing as tp
 from satella.coding.sequences import half_product
 from ..basic import Box, Vector, Line
-from ..base import iszero
+from ..base cimport iszero
 from ..exceptions import ValueWarning, NotReadyError
 
 
@@ -16,7 +15,7 @@ def must_be_initialized(fun):
     return inner
 
 
-class Path:
+cdef class Path:
 
     def set_z_to(self, z: float):
         """
@@ -57,7 +56,7 @@ class Path:
         except IndexError:
             raise NotReadyError('Path must contain at least one element')
 
-    def set_size(self, value: Vector):
+    cpdef set_size(self, Vector value):
         self.size = value
 
     @must_be_initialized
