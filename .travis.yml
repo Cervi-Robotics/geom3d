@@ -15,3 +15,5 @@ script:
 after_success:
   - coverage xml
   - ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT
+  - bash build.sh
+
