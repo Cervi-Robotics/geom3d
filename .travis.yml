@@ -17,27 +17,24 @@ jobs:
       python: "nightly"
       script:
         - bash tests/test.sh
-    - sudo: required
-      stage: deploy
+    - stage: deploy
       services:
         - docker
       env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
            PLAT=manylinux1_x86_64
       script:
-        - bash build.sh
-    - sudo: required
-      stage: deploy
+        - bash tests/build.sh travis
+    - stage: deploy
       services:
         - docker
       env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
            PLAT=manylinux1_x86_64
       script:
-        - bash build.sh
-    - sudo: required
-      stage: deploy
+        - bash tests/build.sh travis
+    - stage: deploy
       services:
         - docker
       env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
            PLAT=manylinux1_x86_64
       script:
-        - bash build.sh
+        - bash tests/build.sh travis
