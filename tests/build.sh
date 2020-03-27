@@ -3,7 +3,7 @@
 set -x
 set -e
 
-if [ $1 == "travis" ]; then
+if [ "$1" == "travis" ]; then
   docker pull "$DOCKER_IMAGE"
   docker run --rm -it -e PLAT=$PLAT -e PYPI_USER="$PYPI_USER" -e PYPI_PWD="$PYPI_PWD" -v `pwd`:/io $DOCKER_IMAGE bash /io/tests/build.sh
 else
