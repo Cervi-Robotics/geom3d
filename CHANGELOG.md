@@ -1,4 +1,4 @@
-# v0.4.1_a1
+# v0.4.1
 
 * fixed installation dependencies
 * pip wheels will be built on Travis for Linux @ Python images
