@@ -10,18 +10,27 @@ cdef class Planet:
         """
         Calculate circumference going through given latitude
         
+        You can override this function if your planet works differently.
+        
         :param latitude: latitude, in degrees
         """
         return 2 * M_PI * self.radius_at_equator * cos(to_radians(latitude))
 
 
 cdef class Earth(Planet):
+    """
+    Planet Earth, Solar system, Orion arm, Milky Way galaxy, Virgo Supercluster
+    """
     def __init__(self):
         self.radius_at_equator = 6378000.0
         self.circumference_at_pole = 40008000.0
 
 
+
 cdef class CustomPlanet(Planet):
+    """
+    An arbitrary geoid-like planet.
+    """
     def __init__(self, radius_at_equator: float, circumference_at_pole: float):
         self.radius_at_equator = radius_at_equator
         self.circumference_at_pole = circumference_at_pole

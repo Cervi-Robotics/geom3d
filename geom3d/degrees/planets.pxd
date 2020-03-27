@@ -6,11 +6,6 @@ cdef inline double to_radians(double degrees):
 
 
 cdef class Planet:
-    """
-    This should have two class properties:
-
-    * `radius_at_equator` -
-    """
     cdef:
         public double circumference_at_pole
         public radius_at_equator
@@ -19,4 +14,7 @@ cdef class Planet:
 
 
 cdef class Earth(Planet):
+    pass
+
+cdef class CustomPlanet(Planet):
     pass

@@ -66,3 +66,22 @@ More complex 3D structures
 
 .. autoclass:: geom3d.meshes.Triangle
     :members:
+
+Paths
+=====
+
+Paths is a box (that meant, it has a certain size) with ordered
+points in space, constituting that box's path in the function of
+time (only that time is undefined).
+
+.. autoclass:: geom3d.paths.Path
+    :members:
+
+Path can be initialized (that means that it has a box-sized size vector).
+An initialized path can be ``__iter__`ed, yielding boxes that will be
+the positions of the box in a moment in time.
+
+A path is mutable, and methods
+:meth:`geom3d.paths.Path.head_towards` and
+:meth:`geom3d.paths.Path.advance` can be used to add extra
+elements to it's path.

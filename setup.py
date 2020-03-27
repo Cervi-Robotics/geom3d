@@ -2,16 +2,15 @@ from setuptools import setup
 from snakehouse import Multibuild, build
 from setuptools import Extension
 
-import os
-
 ext_modules = build([
       Extension('geom3d.base', ['geom3d/base.pyx']),
       Extension('geom3d.basic', ['geom3d/basic.pyx']),
-      Multibuild('geom3d.degrees', [os.path.join('geom3d', 'degrees', 'planets.pyx'),
-                                    os.path.join('geom3d', 'degrees', 'coordinates.pyx')]),
+      Multibuild('geom3d.degrees', ['geom3d/degrees/planets.pyx',
+                                    'geom3d/degrees/coordinates.pyx']),
       Extension('geom3d.paths.nonintersecting', ['geom3d/paths/nonintersecting.pyx']),
       Extension('geom3d.polygons.twodimensional', ['geom3d/polygons/twodimensional.pyx']),
       Extension('geom3d.paths.polygon', ['geom3d/paths/polygon.pyx']),
+      Multibuild('geom3d.meshes', ['geom3d/meshes/meshes.pyx']),
 ], compiler_directives={
       'language_level': '3'
 })

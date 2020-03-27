@@ -1,1 +1,1 @@
-from .basic import Triangle
+from .meshes import Triangle
