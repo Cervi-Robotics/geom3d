@@ -1,3 +1,7 @@
+# v0.4.3
+
+* _TBA_
+
 # v0.4.2
 
 * added `Polygon2D.get_closest_to`

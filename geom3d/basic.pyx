@@ -163,6 +163,7 @@ cdef class Line:
     :param start: where does the line start
     :param stop: where does the line end
     """
+
     cpdef double distance_to_line(self, Vector vector):
         """Return a shortest distance given vector has to an axis defined by this line"""
         return vector.sub(self.start).cross_product(self.stop_sub_start).get_length() / self.stop_sub_start.get_length()
