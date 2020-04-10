@@ -1,7 +1,3 @@
-from geom3d.base cimport iszero, isclose
-from geom3d.basic cimport Vector, Line
-
-
 cpdef list make_nonintersecting(list paths):  # type: (tp.List[tp.Tuple[int, int, Path]]) -> tp.List[Path]
     """
     Make the paths non-intersecting.

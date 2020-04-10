@@ -1,7 +1,11 @@
-from libc.math cimport sqrt, fabs
+import logging
 import typing as tp
+
+from libc.math cimport fabs
+
 from .base cimport iszero, isclose
 
+logger = logging.getLogger(__name__)
 
 __all__ = ['Vector', 'Box', 'Line', 'PointOnLine']
 
@@ -11,6 +15,14 @@ cdef class Vector:
         self.x = x
         self.y = y
         self.z = z
+
+    cpdef double distance_to(self, Vector other):
+        """
+        Syntactic sugar for
+        
+        >>> self.sub(other).get_length()
+        """
+        return self.sub(other).get_length()
 
     cpdef Vector cross_product(self, Vector other):
         """Calculate the cross product between this vector and the other"""
@@ -79,7 +91,7 @@ cdef class Vector:
         else:
             return f'Vector({self.x}, {self.y}, {self.z})'
 
-    cpdef Vector update(self, object x, object y, object z):
+    cpdef Vector update(self, object x=None, object y=None, object z=None):
         """
         Return this vector, but with some coordinates changed
 
@@ -113,9 +125,7 @@ cdef class Vector:
     cdef double get_length(self):
         return get_length(self)
 
-
-
-
+      
 cdef class PointOnLine:
     """
     This class serves to compute points that lie a certain distance from the start, but still
@@ -146,7 +156,6 @@ cdef class PointOnLine:
         """Return the physical point given PointOnLine corresponds to"""
         return self.line.start.add(self.line.unit_vector.mul(self.length))
 
-
 cdef class Line:
     """
     A line in 3D. It starts somewhere and ends somewhere.
@@ -154,12 +163,13 @@ cdef class Line:
     :param start: where does the line start
     :param stop: where does the line end
     """
-
-    cdef double distance_to_line(self, Vector vector):
-        return vector.sub(self.start).cross_product(vector.sub(self.stop)).get_length() / (self.stop.sub(self.start)).get_length()
+    cpdef double distance_to_line(self, Vector vector):
+        """Return a shortest distance given vector has to an axis defined by this line"""
+        return vector.sub(self.start).cross_product(self.stop_sub_start).get_length() / self.stop_sub_start.get_length()
 
     def __contains__(self, vec: Vector) -> bool:
         """Does this line contain given vector?"""
+
         cdef double min_x, max_x
         if self.start.x > self.stop.x:
             max_x = self.start.x
@@ -167,7 +177,7 @@ cdef class Line:
         else:
             max_x = self.stop.x
             min_x = self.start.x
-            
+
         cdef double min_y, max_y
         if self.start.y > self.stop.y:
             max_y = self.start.y
@@ -197,7 +207,8 @@ cdef class Line:
         elif vec.z > max_z:
             return False
 
-        return iszero(self.distance_to_line(vec))
+        return self.stop_sub_start.unitize().dot_product(vec.sub(self.stop).unitize()) < 0 and \
+               self.start.sub(self.stop).unitize().dot_product(vec.sub(self.start).unitize()) < 0
 
     def __str__(self) -> str:
         return f'<Line {self.start} {self.stop}>'
@@ -205,9 +216,9 @@ cdef class Line:
     def __init__(self, start: Vector, stop: Vector):
         self.start = start
         self.stop = stop
-        cdef Vector direction = self.stop.sub(self.start)
-        self.unit_vector = direction.unitize()
-        self.length = direction.get_length()
+        self.stop_sub_start = stop.sub(start)
+        self.unit_vector = self.stop_sub_start.unitize()
+        self.length = self.stop_sub_start.get_length()
 
     cpdef PointOnLine get_point_relative(self, double distance_from_start):
         """
@@ -215,7 +226,7 @@ cdef class Line:
         
         :param distance_from_start: 0 <= x <= 1
         """
-        return PointOnLine(self, distance_from_start*self.length)
+        return PointOnLine(self, distance_from_start * self.length)
 
     cpdef PointOnLine get_point(self, double distance_from_start):
         """
@@ -248,7 +259,6 @@ cdef class Line:
 
 ZERO_POINT = Vector(0, 0, 0)
 
-
 cdef class Box:
     """
     An axis-aligned box that starts at some place and ends at some place.
@@ -267,19 +277,16 @@ cdef class Box:
     cpdef bint collides(self, Box other):
         """Does this box share at least one point with the other box?"""
         cdef bint x_cond = self.start.x <= other.start.x <= self.stop.x
-        x_cond |= other.start.x <= self.stop.x <= other.stop.x
 
         x_cond |= other.start.x <= self.start.x <= other.stop.x
         x_cond |= self.start.x <= other.stop.x <= self.stop.x
 
         cdef bint y_cond = self.start.y <= other.start.y <= self.stop.y
-        y_cond |= other.start.y <= self.stop.y <= other.stop.y
 
         y_cond |= other.start.y <= self.start.y <= other.stop.y
         y_cond |= self.start.y <= other.stop.y <= self.stop.y
 
         cdef bint z_cond = self.start.z <= other.start.z <= self.stop.z
-        z_cond |= other.start.z <= self.stop.z <= other.stop.z
 
         z_cond |= other.start.z <= self.start.z <= other.stop.z
         z_cond |= self.start.z <= other.stop.z <= self.stop.z
@@ -315,9 +322,9 @@ cdef class Box:
         return self.get_center()
 
     cdef Vector get_center(self):
-        cdef double x = (self.stop.x - self.start.x)/2
-        cdef double y = (self.stop.y - self.start.y)/2
-        cdef double z = (self.stop.z - self.start.z)/2
+        cdef double x = (self.stop.x - self.start.x) / 2
+        cdef double y = (self.stop.y - self.start.y) / 2
+        cdef double z = (self.stop.z - self.start.z) / 2
         return Vector(x, y, z)
 
     cpdef double get_volume(self):

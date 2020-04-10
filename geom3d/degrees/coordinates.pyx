@@ -1,11 +1,11 @@
-from libc.math cimport cos, M_PI, sqrt, fabs
-
 import collections.abc
 import typing as tp
 
-from .planets cimport Earth, Planet, to_radians
-from .planets import Earth, Planet
 from geom3d.basic cimport Vector
+from libc.math cimport cos, M_PI, sqrt, fabs
+
+from .planets import Earth, Planet
+from .planets cimport Earth, Planet, to_radians
 
 
 cdef inline double avg(list x):
@@ -53,10 +53,10 @@ cdef class XYPoint:
     cpdef double distance(self, object other):  # type: (tp.Union[Vector, XYPoint])
         """Calculate distance to the other point or vector"""
         cdef double x = self.x - other.x
-        x = x*x
+        x = x * x
         cdef double y = self.y - other.y
-        y = y*y
-        return sqrt(x+y)
+        y = y * y
+        return sqrt(x + y)
 
     cpdef XYPoint add(self, object other):
         return XYPoint(None if not self.is_avg_lat_set else self.avg_lat, self.x + other.x,
@@ -82,10 +82,7 @@ cdef class XYPoint:
         self.y -= other.y
         return self
 
-
-
 cdef class Coordinates:
-
     def __init__(self, lat: float, lon: float):
         self.lat = lat
         self.lon = lon
@@ -98,8 +95,6 @@ cdef class Coordinates:
         reference frame, use :class:`geom3d.degrees.XYPointCollection` instead
         """
         return XYPointCollection([self], planet)[0]
-
-
 
 
 class XYPointCollection(collections.abc.Sequence):

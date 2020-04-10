@@ -1,6 +1,5 @@
 from libc.math cimport M_PI, cos
 
-
 cdef class Planet:
     """
     A generic geoid. This is assumes to have to different circumferences - one going through the
@@ -16,7 +15,6 @@ cdef class Planet:
         """
         return 2 * M_PI * self.radius_at_equator * cos(to_radians(latitude))
 
-
 cdef class Earth(Planet):
     """
     Planet Earth, Solar system, Orion arm, Milky Way galaxy, Virgo Supercluster
@@ -24,8 +22,6 @@ cdef class Earth(Planet):
     def __init__(self):
         self.radius_at_equator = 6378000.0
         self.circumference_at_pole = 40008000.0
-
-
 
 cdef class CustomPlanet(Planet):
     """

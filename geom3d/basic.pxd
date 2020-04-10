@@ -8,7 +8,7 @@ cdef class Vector:
 
     cpdef Vector cross_product(self, Vector other)
     cpdef double dot_product(self, Vector other)
-    cpdef Vector update(self, object x, object y, object z)
+    cpdef Vector update(self, object x= *, object y= *, object z= *)
     cpdef Vector unitize(self)
     cpdef Vector zero_z(self)
     cdef bint eq(self, Vector other)
@@ -20,12 +20,9 @@ cdef class Vector:
     cpdef Vector vabs(self)
     cpdef Vector truediv(self, double other)
     cdef double get_length(self)
+    cpdef double distance_to(self, Vector other)
 
-    cdef inline double distance_to(self, Vector other):
-        return self.sub(other).get_length()
-
-
-
+    
 cpdef inline Vector add(Vector self, Vector other):
     return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
 
@@ -33,7 +30,7 @@ cpdef inline Vector sub(Vector self, Vector other):
     return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
 
 cpdef inline Vector mul(Vector self, double other):
-    return Vector(self.x*other, self.y*other, self.z*other)
+    return Vector(self.x * other, self.y * other, self.z * other)
 
 cpdef inline Vector neg(Vector self):
     return Vector(-self.x, -self.y, -self.z)
@@ -45,8 +42,7 @@ cpdef inline Vector truediv(Vector self, double other):
     return Vector(self.x / other, self.y / other, self.z / other)
 
 cdef inline double get_length(Vector self):
-    return sqrt(self.x*self.x + self.y*self.y + self.z*self.z)
-
+    return sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
 
 cdef class PointOnLine:
     cdef:
@@ -58,25 +54,28 @@ cdef class PointOnLine:
     cpdef PointOnLine add(self, double other)
     cdef double get_relative_position(self)
 
-
 cdef class Line:
     cdef:
         readonly Vector start
         readonly Vector stop
         readonly Vector unit_vector
         readonly double length
+        readonly Vector stop_sub_start  # a shorthand for self.stop.sub(self.start)
 
     cdef double distance_to_line(self, Vector vector)
     cpdef PointOnLine get_point(self, double distance_from_start)
     cpdef PointOnLine get_point_relative(self, double distance_from_start)
 
+    cpdef double distance_to_line(self, Vector vector)
+    cpdef PointOnLine get_point(self, double distance_from_start)
+    cpdef PointOnLine get_point_relative(self, double distance_from_start)
 
 cdef class Box:
     cdef:
         readonly Vector start
         readonly Vector stop
 
-    cpdef bint collides(self, Box other)        # type: (Box) -> bool
+    cpdef bint collides(self, Box other)  # type: (Box) -> bool
     cpdef Box translate(self, Vector p)
     cpdef Box relocate_to_zero(self)
     cpdef double get_volume(self)
@@ -84,5 +83,3 @@ cdef class Box:
     cdef Vector get_center(self)
     cpdef Box center_at(self, Vector p)
     cdef Vector get_size(self)
-
-

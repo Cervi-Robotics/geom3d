@@ -1,11 +1,11 @@
 from geom3d.basic cimport Vector
 from geom3d.polygons.twodimensional cimport Polygon2D
 
-from .path import Path
+from .path cimport Path
 
 
-cpdef object cover_polygon2d_with_path(Polygon2D polygon, Vector box, double step_downscale,
-                              double step_advance, double start_at):        # type: (...) -> Path
+cpdef Path cover_polygon2d_with_path(Polygon2D polygon, Vector box, double step_downscale,
+                                     double step_advance, double start_at):
     """Build a path covering the entire polygon. This will try to build a spiral with flat down
     advancements at the end of each perimeter.
 
@@ -23,7 +23,7 @@ cpdef object cover_polygon2d_with_path(Polygon2D polygon, Vector box, double ste
     cdef Vector point
 
     while True:
-        for point in polygon.iter_from(start_at*polygon.total_perimeter_length):
+        for point in polygon.iter_from(start_at * polygon.total_perimeter_length):
             path.head_towards(point, step_advance)
         path.head_towards(polygon.get_point_on_polygon(offset).to_vector(), step_advance)
         try:

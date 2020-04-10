@@ -1,23 +1,24 @@
-import warnings
 import functools
 import typing as tp
-from satella.coding.sequences import half_product
-from ..basic import Box, Vector, Line
+import warnings
+
+from satella.coding.sequences import half_product, add_next
+
 from ..base cimport iszero
+from ..basic cimport Box, Vector, Line
 from ..exceptions import ValueWarning, NotReadyError
 
 
 def must_be_initialized(fun):
     @functools.wraps(fun)
     def inner(self, *args, **kwargs):
-        self.head       # raises NotReadyError
+        self.head  # raises NotReadyError
         return fun(self, *args, **kwargs)
     return inner
 
 
 cdef class Path:
-
-    def set_z_to(self, z: float):
+    cpdef Path set_z_to(self, double z):
         """
         Change the z of every vector to that provided.
 
@@ -25,7 +26,7 @@ cdef class Path:
 
         :return: new Path
         """
-        return
+        return Path(self.size, [p.update(z=z) for p in self.points])
 
     @classmethod
     def from_to(cls, source: Vector, destination: Vector, size: Vector,
@@ -56,7 +57,7 @@ cdef class Path:
         except IndexError:
             raise NotReadyError('Path must contain at least one element')
 
-    cpdef set_size(self, Vector value):
+    cpdef void set_size(self, Vector value):
         self.size = value
 
     @must_be_initialized
@@ -65,7 +66,7 @@ cdef class Path:
         if iszero(delta.length):
             return
 
-        self.points.append(self.head + delta)
+        self.points.append(self.head.add(delta))
 
     @must_be_initialized
     def head_towards(self, point: Vector, delta: float):
@@ -76,14 +77,14 @@ cdef class Path:
         :param point: point to advance towards
         :param delta: size of step to use in constructing the path
         """
-        if iszero((point - self.head).length):
+        if iszero((point.sub(self.head)).length):
             return
 
         while point != self.head:
-            vector_towards = (point - self.head)
+            vector_towards = point.sub(self.head)
             if vector_towards.length < delta:
                 return self.advance(vector_towards)
-            self.advance(vector_towards.unitize() * delta)
+            self.advance(vector_towards.unitize().mul(delta))
 
     def __getitem__(self, item: int) -> Vector:
         return self.points[item]
@@ -96,12 +97,14 @@ cdef class Path:
         for point in self.points:
             yield Box.centered_with_size(point, self.size)
 
-    def append(self, elem: tp.Union[Vector, Box]):
+    cpdef int append(self, object elem) except -1:  # type: (tp.Union[Vector, Box]) -> None
+        cdef Box box
+        cdef Vector center, vector
         if isinstance(elem, Box):
-            box: Box = elem
+            box = elem
             if self.size is None:
                 self.size = box.size
-                center: Vector = box.center
+                center = box.center
                 self.points.append(center)
             else:
                 if elem.size != self._size:
@@ -109,7 +112,7 @@ cdef class Path:
                                   'It will be disregarded.', ValueWarning)
                 self.points.append(self.head)
         else:
-            vector: Vector = elem
+            vector = elem
             if self._size is None:
                 raise ValueError('Path must have at least one Box element!')
             self.points.append(vector)
@@ -128,3 +131,12 @@ cdef class Path:
         for elem1, elem2 in half_product(self, other):
             if elem1.collides(elem2):
                 yield elem1, elem2
+
+    cpdef double get_length(self):
+        """Calculate and return the total length of this path"""
+        cdef double length = 0
+        cdef Vector prev_p, next_p
+        for prev_p, next_p in add_next(self.points):
+            if next_p is None:
+                return length
+            length += prev_p.distance_to(next_p)
