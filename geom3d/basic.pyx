@@ -208,8 +208,8 @@ cdef class Line:
         elif vec.z > max_z:
             return False
 
-        return self.stop_sub_start.unitize().dot_product(vec.sub(self.stop).unitize()) < 0 and \
-               self.start.sub(self.stop).unitize().dot_product(vec.sub(self.start).unitize()) < 0
+        return self.unit_vector.dot_product(vec.sub(self.stop).unitize()) < 0 and \
+               self.unit_vector.neg().dot_product(vec.sub(self.start).unitize()) < 0
 
     def __str__(self) -> str:
         return f'<Line {self.start} {self.stop}>'
