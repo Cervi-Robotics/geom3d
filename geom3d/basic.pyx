@@ -72,8 +72,8 @@ cdef class Vector:
 
     cpdef Vector unitize(self):
         """Return an unit vector having the same heading as current vector"""
-        cdef double length = self.length
-        if length == 0:
+        cdef double length = self.get_length()
+        if iszero(length):
             return ZERO_POINT
         return Vector(self.x / length, self.y / length, self.z / length)
 
