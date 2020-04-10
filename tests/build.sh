@@ -26,5 +26,5 @@ else
   done
 
   /opt/python/cp38-cp38/bin/pip install twine
-  /opt/python/cp38-cp38/bin/twine upload -u "$PYPI_USER" -p "$PYPI_PWD" wheelhouse/geom3d-*manylinux*.whl
+  /opt/python/cp38-cp38/bin/twine upload -u "$PYPI_USER" -p "$PYPI_PWD" "wheelhouse/geom3d-*${PLAT}.whl"
 fi
