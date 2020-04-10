@@ -28,5 +28,6 @@ class TestBasic(unittest.TestCase):
         line = Line(Vector(0, 0), Vector(1, 0))
         self.assertEqual(line.unit_vector, Vector(1, 0))
 
-
-
+    def test_contains(self):
+        line = Line(Vector(0, 0), Vector(1, 1))
+        self.assertIn(Vector(0.5, 0.5), line)

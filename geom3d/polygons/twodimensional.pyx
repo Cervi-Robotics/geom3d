@@ -1,14 +1,12 @@
-from libc.math cimport fabs
-
 import itertools
 import typing as tp
 
+from geom3d.base cimport iszero, true_modulo, EPSILON
+from libc.math cimport fabs
 from satella.coding.sequences import add_next, shift
 
-from ..basic cimport Line, Vector, add, sub, mul, neg
+from ..basic cimport Line, Vector, add, sub, mul, neg, PointOnLine
 from ..paths import Path
-
-from geom3d.base cimport iszero, true_modulo, EPSILON
 
 
 cdef class Polygon2D:
@@ -33,8 +31,20 @@ cdef class Polygon2D:
         for point_p in points:
             if not point_p in self:
                 raise ValueError('Polygon cannot be shrunk further!')
-        points = points[-1:] + points[:-1]      # since the first point was reported last...
+        points = points[-1:] + points[:-1]  # since the first point was reported last...
         return Polygon2D(points)
+
+    def iter_lengths(self) -> tp.Iterator[float]:
+        """
+        Return an iterator returning lengths from the start along the perimeter to given vertex of the polygon.
+        
+        First point is zero.
+        """
+        cdef double tot_length = 0
+        cdef double seg_length
+        for seg_length in self.len_segments:
+            yield tot_length
+            tot_length += seg_length
 
     def to_path(self, step: float, size: Vector) -> Path:
         """
@@ -104,7 +114,7 @@ cdef class Polygon2D:
         for p0, p1 in add_next(self.points, wrap_over=True):
             x += (p0.x + p1.x) * (p0.x * p1.y - p1.x * p0.y)
             y += (p0.y + p1.y) * (p0.x * p1.y - p1.x * p0.y)
-        return Vector(x/6*sa, y/6*sa)
+        return Vector(x / 6 * sa, y / 6 * sa)
 
     @property
     def centroid(self) -> Vector:
@@ -177,8 +187,39 @@ cdef class Polygon2D:
         """Return the previous segment in regards to the one currently passed"""
         return self.get_nth_segment(segment, -1)
 
+    cpdef float get_closest_to(self, Vector vec, int iterations = 10):
+        """
+        Get the length along the perimeter of a perimeter point closest to vec
+        
+        :param vec: Vector to which returned point on the perimeter of the polygon has to be the closest
+        :param iterations: the iterations. The greater the number the slower it runs, but the better the result is
+        """
+        cdef int i
+        cdef Line seg
+        cdef list sum_of_distances = [(seg.start.distance_to(vec) + seg.stop.distance_to(vec), i) for i, seg in
+                                      enumerate(self.iter_segments())]
+        cdef int index = min(sum_of_distances)[1]
+        cdef Line segment = self.segments[index]
+        cdef double cur_ran_start = 0
+        cdef double cur_ran_stop = segment.length
+        cdef PointOnLine pol1, pol2
+        cdef double cur_ran_half
+        cdef int j
+        for j in range(iterations):
+            cur_ran_half = (cur_ran_start + cur_ran_stop) / 2
+            pol1 = segment.get_point((cur_ran_start + cur_ran_half) / 2)
+            pol2 = segment.get_point((cur_ran_stop + cur_ran_half) / 2)
+            if pol1.to_vector().distance_to(vec) < pol2.to_vector().distance_to(vec):
+                cur_ran_stop = cur_ran_half
+            else:
+                cur_ran_start = cur_ran_half
+        cdef double dist = 0
+        for j in range(index):
+            dist += self.len_segments[j]
+        return dist + cur_ran_half
+
     cpdef PointOnPolygon2D get_point_on_polygon_relative(self, double distance_from_start,
-                                      double offset = 0):
+                                                         double offset = 0):
         """
         Return a point on polygon counted as a fraction of it's total perimeter.
 
@@ -220,9 +261,7 @@ cdef class Polygon2D:
         if include_last_point:
             yield self.points[-1]
 
-
 cdef class PointOnPolygon2D:
-
     def __init__(self, polygon: Polygon2D, distance_from_start: float, offset: float):
         self.polygon = polygon
         self._distance_from_start = distance_from_start
@@ -235,7 +274,7 @@ cdef class PointOnPolygon2D:
     cdef double get_distance_from_start(self):
         return true_modulo(self._distance_from_start + self.offset, self.polygon.total_perimeter_length)
 
-    cpdef bint is_on_vertex(self):      # type: () -> bool
+    cpdef bint is_on_vertex(self):  # type: () -> bool
         """Does this point occur right on a vertex of the polygon?"""
         cdef:
             double remaining_distance = self.distance_from_start
@@ -308,7 +347,7 @@ cdef class PointOnPolygon2D:
             common_vec = segment.unit_vector
 
         cdef:
-            Vector point = Vector(common_vec.y, -common_vec.x)     # construct orthogonal unit vector
+            Vector point = Vector(common_vec.y, -common_vec.x)  # construct orthogonal unit vector
             double epsilon = EPSILON
 
         cdef Vector point2 = mul(point, epsilon)

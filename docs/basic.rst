@@ -41,7 +41,7 @@ Note that you first need to set a satisfying epsilon:
 .. autoclass:: geom3d.Line
     :members:
 
-.. autoclass:: geom3d.PointInLine
+.. autoclass:: geom3d.PointOnLine
     :members:
 
 .. autoclass:: geom3d.Path
@@ -85,3 +85,7 @@ A path is mutable, and methods
 :meth:`geom3d.paths.Path.head_towards` and
 :meth:`geom3d.paths.Path.advance` can be used to add extra
 elements to it's path.
+
+If you want a path that covers your entire polygon, you can use
+
+.. autofunction:: geom3d.paths.cover_polygon2d_with_path
