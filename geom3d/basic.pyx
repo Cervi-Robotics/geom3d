@@ -72,8 +72,8 @@ cdef class Vector:
 
     cpdef Vector unitize(self):
         """Return an unit vector having the same heading as current vector"""
-        cdef double length = self.length
-        if length == 0:
+        cdef double length = self.get_length()
+        if iszero(length):
             return ZERO_POINT
         return Vector(self.x / length, self.y / length, self.z / length)
 
@@ -163,6 +163,7 @@ cdef class Line:
     :param start: where does the line start
     :param stop: where does the line end
     """
+
     cpdef double distance_to_line(self, Vector vector):
         """Return a shortest distance given vector has to an axis defined by this line"""
         return vector.sub(self.start).cross_product(self.stop_sub_start).get_length() / self.stop_sub_start.get_length()
@@ -207,8 +208,8 @@ cdef class Line:
         elif vec.z > max_z:
             return False
 
-        return self.stop_sub_start.unitize().dot_product(vec.sub(self.stop).unitize()) < 0 and \
-               self.start.sub(self.stop).unitize().dot_product(vec.sub(self.start).unitize()) < 0
+        return self.unit_vector.dot_product(vec.sub(self.stop).unitize()) < 0 and \
+               self.unit_vector.neg().dot_product(vec.sub(self.start).unitize()) < 0
 
     def __str__(self) -> str:
         return f'<Line {self.start} {self.stop}>'

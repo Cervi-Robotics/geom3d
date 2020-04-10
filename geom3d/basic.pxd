@@ -62,13 +62,10 @@ cdef class Line:
         readonly double length
         readonly Vector stop_sub_start  # a shorthand for self.stop.sub(self.start)
 
-    cdef double distance_to_line(self, Vector vector)
-    cpdef PointOnLine get_point(self, double distance_from_start)
-    cpdef PointOnLine get_point_relative(self, double distance_from_start)
-
     cpdef double distance_to_line(self, Vector vector)
     cpdef PointOnLine get_point(self, double distance_from_start)
     cpdef PointOnLine get_point_relative(self, double distance_from_start)
+
 
 cdef class Box:
     cdef:
