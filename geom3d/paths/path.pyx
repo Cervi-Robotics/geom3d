@@ -1,9 +1,9 @@
 import typing as tp
 import warnings
-
+from copy import copy
 from satella.coding.sequences import half_product, add_next, count
 
-from ..base cimport iszero, isequal
+from ..base cimport iszero, isclose
 from ..basic cimport Box, Vector, Line
 from ..exceptions import ValueWarning, NotReadyError
 
@@ -22,6 +22,12 @@ cdef class Path:
         :return: new Path
         """
         return Path(self.size, [p.update(z=z) for p in self.points])
+
+    cpdef Path copy(self):
+        return Path(self.size, copy(self.points))
+
+    def __copy__(self):
+        return self.copy()
 
     @classmethod
     def from_to(cls, source: Vector, destination: Vector, size: Vector,
@@ -143,10 +149,12 @@ cdef class Path:
                 return True
         return False
 
-    def get_intersecting_boxes(self, other: Path) -> tp.Generator[tp.Tuple[Box, Box], None, None]:
+    cpdef object get_intersecting_boxes(self, Path other):
         """
         Return all intersections of these elements that collide.
         """
+        cdef Box elem1, elem2
+
         for elem1, elem2 in half_product(self, other):
             if elem1.collides(elem2):
                 yield elem1, elem2

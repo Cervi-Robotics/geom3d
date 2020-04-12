@@ -12,7 +12,7 @@ cdef class Vector:
     cpdef Vector unitize(self)
     cpdef Vector zero_z(self)
     cdef bint eq(self, Vector other)
-
+    cpdef Vector copy(self)
     cpdef Vector add(self, Vector other)
     cpdef Vector sub(self, Vector other)
     cpdef Vector mul(self, double other)

@@ -16,6 +16,13 @@ cdef class Vector:
         self.y = y
         self.z = z
 
+    cpdef Vector copy(self):
+        """Return a copy of this vector"""
+        return Vector(self.x, self.y, self.z)
+
+    def __copy__(self):
+        return self.copy()
+
     cpdef double distance_to(self, Vector other):
         """
         Syntactic sugar for
