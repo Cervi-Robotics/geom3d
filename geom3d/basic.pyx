@@ -168,6 +168,9 @@ cdef class Line:
         """Return a shortest distance given vector has to an axis defined by this line"""
         return vector.sub(self.start).cross_product(self.stop_sub_start).get_length() / self.stop_sub_start.get_length()
 
+    cpdef bint is_colinear(self, Vector vector):
+        return iszero(self.distance_to_line(vector))
+
     def __contains__(self, vec: Vector) -> bool:
         """Does this line contain given vector?"""
 

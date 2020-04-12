@@ -65,6 +65,7 @@ cdef class Line:
     cpdef double distance_to_line(self, Vector vector)
     cpdef PointOnLine get_point(self, double distance_from_start)
     cpdef PointOnLine get_point_relative(self, double distance_from_start)
+    cpdef bint is_colinear(self, Vector vector)
 
 
 cdef class Box:

@@ -1,27 +1,18 @@
-import functools
 import typing as tp
 import warnings
 
-from satella.coding.sequences import half_product, add_next
+from satella.coding.sequences import half_product, add_next, count
 
-from ..base cimport iszero
+from ..base cimport iszero, isequal
 from ..basic cimport Box, Vector, Line
 from ..exceptions import ValueWarning, NotReadyError
-
-
-def must_be_initialized(fun):
-    @functools.wraps(fun)
-    def inner(self, *args, **kwargs):
-        self.head  # raises NotReadyError
-        return fun(self, *args, **kwargs)
-    return inner
 
 
 cdef class Path:
     cpdef Path reverse(self):
         """Return this path, but backwards"""
         return Path(self.size, list(reversed(self.points)))
-    
+
     cpdef Path set_z_to(self, double z):
         """
         Change the z of every vector to that provided.
@@ -64,16 +55,39 @@ cdef class Path:
     cpdef void set_size(self, Vector value):
         self.size = value
 
-    @must_be_initialized
-    def advance(self, delta: Vector):
+    cpdef Path simplify(self):
+        """
+        Return this path, but with points that are colinear to adjacent points removed
+        """
+        cdef Line line
+        cdef list indices_to_remove = []
+        for prev, mid, next_vector, index in zip(self.points, self.points[1:], self.points[2:], count(self.points, start_at=1)):
+            line = Line(prev, next_vector)
+            if line.is_colinear(mid):
+                indices_to_remove.add(index)
+        cdef list points = [point for i, point in enumerate(self.points) if i not in indices_to_remove]
+        return Path(self.size, points)
+
+    cpdef int advance(self, delta: Vector) except -1:
         """Place next segment of the path at given difference from current head"""
+        self.head  # raises NotReadyError
+
         if iszero(delta.length):
-            return
+            return 0
 
         self.points.append(self.head.add(delta))
+        return 0
 
-    @must_be_initialized
-    def head_towards(self, point: Vector, delta: float):
+    cpdef int elevate(self, height: float, delta: float) except -1:
+        """
+        Change elevation (z-value) to given
+        
+        :param height: target elevation 
+        :param delta: step size to take
+        """
+        self.head_towards(self.head.update(z=height), delta)
+
+    cpdef int head_towards(self, point: Vector, delta: float) except -1:
         """
         Place next pieces of the path at delta distances going towards the point. The last
         segment may be shorter
@@ -82,7 +96,7 @@ cdef class Path:
         :param delta: size of step to use in constructing the path
         """
         if iszero((point.sub(self.head)).length):
-            return
+            return 0
 
         while point != self.head:
             vector_towards = point.sub(self.head)
@@ -90,13 +104,14 @@ cdef class Path:
                 return self.advance(vector_towards)
             self.advance(vector_towards.unitize().mul(delta))
 
+        return 0
+
     def __getitem__(self, item: int) -> Vector:
         return self.points[item]
 
     def __len__(self) -> int:
         return len(self.points)
 
-    @must_be_initialized
     def __iter__(self) -> tp.Iterator[tp.Box]:
         for point in self.points:
             yield Box.centered_with_size(point, self.size)
