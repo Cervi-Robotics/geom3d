@@ -18,6 +18,10 @@ def must_be_initialized(fun):
 
 
 cdef class Path:
+    cpdef Path reverse(self):
+        """Return this path, but backwards"""
+        return Path(self.size, list(reversed(self.points)))
+    
     cpdef Path set_z_to(self, double z):
         """
         Change the z of every vector to that provided.
@@ -47,7 +51,7 @@ cdef class Path:
 
     def __init__(self, size: tp.Optional[Vector] = None,
                  points: tp.Optional[tp.List[Vector]] = None):
-        self.points: tp.List[Vector] = points or []
+        self.points = points or []
         self.size = size
 
     @property

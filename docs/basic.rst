@@ -89,3 +89,13 @@ elements to it's path.
 If you want a path that covers your entire polygon, you can use
 
 .. autofunction:: geom3d.paths.cover_polygon2d_with_path
+
+Making paths nonintersecting
+----------------------------
+
+If you have a bunch of paths, and you want to keep them
+non-intersecting with each other, this function can help you.
+It will make paths nonintersecting by playing around with their
+z-values.
+
+.. autofunction:: geom3d.paths.make_nonintersecting
