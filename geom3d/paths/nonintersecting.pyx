@@ -3,7 +3,7 @@ from ..basic cimport Vector
 from .path cimport Path
 
 
-cdef object make_pair_nonintersecting(object path1, object path2):
+cdef object make_pair_nonintersecting(object path_values_1, object path_values_2):
     """
     Make a pair of paths nonintersecting
      
@@ -11,6 +11,14 @@ cdef object make_pair_nonintersecting(object path1, object path2):
     :type path2: tp.Tuple[int, int, Path]
     :return: tp.Tuple[Path, Path]
     """
+    cdef Path path1 = path_values_1[2].copy()
+    cdef Path path2 = path_values_2[2].copy()
+    cdef double minimum_z_1 = path_values_1[0]
+    cdef double maximum_z_1 = path_values_1[1]
+    cdef double minimum_z_2 = path_values_2[0]
+    cdef double maximum_z_2 = path_values_2[2]
+
+
     intersecting_boxes_path1 = path1.get_intersecting_boxes(path2)
     intersecting_boxes_path2 = path2.get_intersecting_boxes(path1)
 

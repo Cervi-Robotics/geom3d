@@ -11,8 +11,8 @@ class TestPath(unittest.TestCase):
         self.assertEqual(len(path.points), 16)
 
     def test_simplify(self):
-        path1 = Path.from_to(Vector(0, 0), Vector(10, 10))
-        self.assertEqual(len(path1.simplify()).points, 2)
+        path1 = Path.from_to(Vector(0, 0), Vector(10, 10), Vector(1, 1), 0.1)
+        self.assertEqual(len(path1.simplify().points), 2)
 
     def test_path(self):
         path1 = Path.from_to(Vector(0, 0), Vector(10, 0), Vector(1, 1), 0.1)
@@ -27,4 +27,4 @@ class TestPath(unittest.TestCase):
     def test_reversed(self):
         path1 = Path.from_to(Vector(0, 0), Vector(10, 10), Vector(1, 1), 0.1)
         path2 = path1.reverse()
-        self.assertEquals(path1.get_length(), path2.reverse())
+        self.assertAlmostEqual(path1.get_length(), path2.reverse().get_length(), 2)

@@ -149,13 +149,14 @@ cdef class Path:
                 return True
         return False
 
-    cpdef object get_intersecting_boxes(self, Path other):
+    def get_intersecting_boxes(self, other: Path) -> tp.Iterator[Box]:
         """
         Return all intersections of these elements that collide.
         """
+        cdef Path path = other
         cdef Box elem1, elem2
 
-        for elem1, elem2 in half_product(self, other):
+        for elem1, elem2 in half_product(self, path):
             if elem1.collides(elem2):
                 yield elem1, elem2
 

@@ -176,7 +176,9 @@ cdef class Line:
         return vector.sub(self.start).cross_product(self.stop_sub_start).get_length() / self.stop_sub_start.get_length()
 
     cpdef bint is_colinear(self, Vector vector):
-        return iszero(self.distance_to_line(vector))
+        cdef double dist = self.distance_to_line(vector)
+        logger.warning('Is colinear %s:%s:%s = %s' % (self.start, self.stop, vector, dist))
+        return iszero(dist)
 
     def __contains__(self, vec: Vector) -> bool:
         """Does this line contain given vector?"""
