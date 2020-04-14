@@ -6,7 +6,7 @@ import cython
 cdef double EPSILON = 0.01
 
 @cython.cdivision(False)
-cpdef double true_modulo(double a, double b):
+cdef double true_modulo(double a, double b):
     # we care about getting Python's modulo here
     return a % b
 

@@ -1,24 +1,24 @@
-import functools
 import typing as tp
 import warnings
+from copy import copy
+from satella.coding.sequences import half_product, add_next, count
 
-from satella.coding.sequences import half_product, add_next
-
-from ..base cimport iszero
+from ..base cimport iszero, isclose
 from ..basic cimport Box, Vector, Line
 from ..exceptions import ValueWarning, NotReadyError
 
 
-def must_be_initialized(fun):
-    @functools.wraps(fun)
-    def inner(self, *args, **kwargs):
-        self.head  # raises NotReadyError
-        return fun(self, *args, **kwargs)
-    return inner
-
-
 cdef class Path:
-    cpdef Path set_z_to(self, double z):
+    def __init__(self, size: tp.Optional[Vector] = None,
+                 points: tp.Optional[tp.List[Vector]] = None):
+        self.points = points or []
+        self.size = size
+
+    cpdef Path reverse(self):
+        """Return this path, but backwards"""
+        return Path(self.size, list(reversed(self.points)))
+
+    cpdef Path set_z(self, double z):
         """
         Change the z of every vector to that provided.
 
@@ -26,7 +26,13 @@ cdef class Path:
 
         :return: new Path
         """
-        return Path(self.size, [p.update(z=z) for p in self.points])
+        return Path(self.size, [p.set_z(z) for p in self.points])
+
+    cpdef Path copy(self):
+        return Path(self.size, copy(self.points))
+
+    def __copy__(self):
+        return self.copy()
 
     @classmethod
     def from_to(cls, source: Vector, destination: Vector, size: Vector,
@@ -45,11 +51,6 @@ cdef class Path:
 
         return Path(size, points)
 
-    def __init__(self, size: tp.Optional[Vector] = None,
-                 points: tp.Optional[tp.List[Vector]] = None):
-        self.points: tp.List[Vector] = points or []
-        self.size = size
-
     @property
     def head(self) -> Vector:
         try:
@@ -60,16 +61,40 @@ cdef class Path:
     cpdef void set_size(self, Vector value):
         self.size = value
 
-    @must_be_initialized
-    def advance(self, delta: Vector):
+    cpdef Path simplify(self):
+        """
+        Return this path, but with points that are colinear to adjacent points removed
+        """
+        cdef Line line
+        cdef list indices_to_remove = []
+        for prev, mid, next_vector, index in zip(self.points, self.points[1:], self.points[2:], count(self.points, 1)):
+            line = Line(prev, next_vector)
+            if line.is_colinear(mid):
+                indices_to_remove.append(index)
+        cdef set indices_to_remove_set = set(indices_to_remove)
+        cdef list points = [point for i, point in enumerate(self.points) if i not in indices_to_remove_set]
+        return Path(self.size, points)
+
+    cpdef int advance(self, delta: Vector) except -1:
         """Place next segment of the path at given difference from current head"""
+        self.head  # raises NotReadyError
+
         if iszero(delta.length):
-            return
+            return 0
 
         self.points.append(self.head.add(delta))
+        return 0
 
-    @must_be_initialized
-    def head_towards(self, point: Vector, delta: float):
+    cpdef int elevate(self, height: float, delta: float) except -1:
+        """
+        Change elevation (z-value) to given
+        
+        :param height: target elevation 
+        :param delta: step size to take
+        """
+        self.head_towards(self.head.update(z=height), delta)
+
+    cpdef int head_towards(self, point: Vector, delta: float) except -1:
         """
         Place next pieces of the path at delta distances going towards the point. The last
         segment may be shorter
@@ -78,7 +103,7 @@ cdef class Path:
         :param delta: size of step to use in constructing the path
         """
         if iszero((point.sub(self.head)).length):
-            return
+            return 0
 
         while point != self.head:
             vector_towards = point.sub(self.head)
@@ -86,13 +111,68 @@ cdef class Path:
                 return self.advance(vector_towards)
             self.advance(vector_towards.unitize().mul(delta))
 
+        return 0
+
+    cpdef Vector get_vector_at(self, double length):
+        """
+        Get a vector that would appear at length from the start.
+        
+        If the length given is longer than the path, the vector will be extrapolated
+        from two last points and an UserWarning will be given
+        """
+        cdef double len_current = 0
+        cdef double len_between
+        cdef Vector prev_point, next_point
+        cdef Line line
+
+        for prev_point, next_point in add_next(self.points, skip_last=True):
+            len_between = prev_point.distance_to(next_point)
+            if iszero(length):
+                return prev_point
+            if isclose(len_between, length):
+                return next_point
+            elif len_between > length:
+                return Line(prev_point, next_point).get_point(length).to_vector()
+            length -= len_between
+        else:
+            warnings.warn('Length greater than the path, extrapolating', UserWarning)
+            len_between = self.points[-2].distance_to(self.points[-1])
+            length += len_between
+            return Line(self.points[-2], self.points[-1]).get_point(length).to_vector()
+
+    cpdef void insert_at(self, Vector vector, double length):
+        """
+        Insert given vector at some distance from the path's start
+        
+        :param vector: vector to insert 
+        :param length: length from the start
+        """
+        cdef double len_current = 0
+        cdef Vector prev_point = self.points[0]
+        cdef Vector next_point
+        cdef int i  # index to insert before
+        cdef double dist_length
+        if iszero(length):
+            self.points[0] = vector
+            return
+        for i, next_point in enumerate(self.points[1:], start=1):
+            len_current += prev_point.distance_to(next_point)
+            if isclose(len_current, length):
+                self.points[i] = vector
+                return
+            if len_current > length:
+                self.points.insert(i, vector)
+                return
+            prev_point = next_point
+        else:
+            self.points.append(vector)
+
     def __getitem__(self, item: int) -> Vector:
         return self.points[item]
 
     def __len__(self) -> int:
         return len(self.points)
 
-    @must_be_initialized
     def __iter__(self) -> tp.Iterator[tp.Box]:
         for point in self.points:
             yield Box.centered_with_size(point, self.size)
@@ -124,13 +204,37 @@ cdef class Path:
                 return True
         return False
 
-    def get_intersecting_boxes(self, other: Path) -> tp.Generator[tp.Tuple[Box, Box], None, None]:
+    def get_intersecting_boxes(self, other: Path) -> tp.Iterator[Box]:
         """
-        Return all intersections of these elements that collide.
+        Return all boxes that intersect with any other box in other's path
         """
+        cdef Path path = other
+        cdef Box elem1, elem2
+
+        for elem1, elem2 in half_product(self, path):
+            if elem1.collides(elem2):
+                yield elem1
+
+    cpdef bint does_collide(self, Path other):
+        cdef Box elem1, elem2
         for elem1, elem2 in half_product(self, other):
             if elem1.collides(elem2):
-                yield elem1, elem2
+                return True
+        return False
+
+    cpdef list get_intersecting_boxes_indices(self, Path other):
+        """
+        Return all indices of boxes that intersect with any other box in other's path
+        """
+        cdef Path path = other
+        cdef Box elem1, elem2
+        cdef int i
+        cdef list indices = []
+        for row, elem2 in half_product(enumerate(self), path):
+            i, elem1 = row
+            if elem1.collides(elem2):
+                indices.append(i)
+        return indices
 
     cpdef double get_length(self):
         """Calculate and return the total length of this path"""

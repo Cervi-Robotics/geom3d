@@ -1,6 +1,9 @@
 # v0.4.3
 
-* _TBA_
+* added `Path.simplify`
+* added `Path.get_vector_at`
+* added `Path.insert_at`
+* added `Path.does_collide`
 
 # v0.4.2
 
