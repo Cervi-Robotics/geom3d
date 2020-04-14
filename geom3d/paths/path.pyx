@@ -217,7 +217,7 @@ cdef class Path:
 
     cpdef bint does_collide(self, Path other):
         cdef Box elem1, elem2
-        for elem1, elem2 in half_product(enumerate(self), path):
+        for elem1, elem2 in half_product(self, other):
             if elem1.collides(elem2):
                 return True
         return False
