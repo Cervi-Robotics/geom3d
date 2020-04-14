@@ -411,6 +411,19 @@ cdef class Box(VectorStartStop):
 
         return x_cond and y_cond and z_cond
 
+    cpdef bint collides_xy(self, Box other):
+        """Does this box share at least one point with the other box projected on XY axis?"""
+
+        cdef bint x_cond = check_collision_x(self.start, other.start, self.stop) or \
+            check_collision_x(other.start, self.start, other.stop) or \
+            check_collision_x(self.start, other.stop, self.stop)
+
+        cdef bint y_cond = check_collision_y(self.start, other.start, self.stop) or \
+            check_collision_y(other.start, self.start, other.stop) or \
+            check_collision_y(self.start, other.stop, self.stop)
+
+        return x_cond and y_cond
+
     cpdef Box relocate_to_zero(self):
         """Return same sized box, but with starting point at (0, 0, 0)"""
         return self.translate(-self.start)

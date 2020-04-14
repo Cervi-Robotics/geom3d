@@ -16,7 +16,16 @@ cdef class Path:
 
     cpdef Path reverse(self):
         """Return this path, but backwards"""
-        return Path(self.size, list(reversed(self.points)))
+        return Path(self.size, self.points[::-1])
+
+    cpdef Path translate_z(self, double delta):
+        """
+        Return this path, but with every point added delta
+        
+        :param delta: parameter to add to z axis 
+        """
+        cdef list points = [point.add(Vector(0, 0, delta)) for point in self.points]
+        return Path(self.size, points)
 
     cpdef Path set_z(self, double z):
         """
@@ -167,8 +176,14 @@ cdef class Path:
         else:
             self.points.append(vector)
 
-    def __getitem__(self, item: int) -> Vector:
+    def __getitem__(self, item):
         return self.points[item]
+
+    def __setitem__(self, key: int, value: Vector):
+        self.points[key] = value
+
+    def __delitem__(self, key):
+        del self.points[key]
 
     def __len__(self) -> int:
         return len(self.points)
@@ -244,3 +259,95 @@ cdef class Path:
             if next_p is None:
                 return length
             length += prev_p.distance_to(next_p)
+
+    cpdef double avg_z(self):
+        """Return arithmetic mean of all z-values of constituent points"""
+        cdef double sum_e
+        cdef int count
+        cdef Vector vector
+        for vector in self.points:
+            sum_e += vector.z
+            count += 1
+        return sum_e / count
+
+    cpdef Path2D to_path2D(self):
+        """
+        Return this path as a Path2D
+        """
+        return Path2D(self.size, self.points)
+
+
+class Path2D(Path):
+    """
+    Path in which only x, y coordinates ever matter
+    """
+    def __init__(self, size: tp.Optional[Vector] = None,
+                 points: tp.Optional[tp.List[Vector]] = None):
+        super().__init__(size, points or [])
+
+    cpdef list get_intersecting_boxes_indices(self, Path other):
+        """
+        Return all indices of boxes that intersect with any other box in other's path
+        """
+        cdef Box elem1, elem2
+        cdef int i
+        cdef list indices = []
+        if isinstance(other, Path2D):
+            cdef Path2D other2 = other
+            for row, elem2 in half_product(enumerate(self), other2):
+                i, elem1 = row
+                if elem1.collides_xy(elem2):
+                    indices.append(i)
+            return indices
+        else:
+            return super().get_intersecting_boxes_indices(other)
+
+    cpdef bint does_collide(self, Path other):
+        if isinstance(other, Path2D):
+            cdef Box elem1, elem2
+            cdef Path2D other2 = other
+            for elem1, elem2 in half_product(self, other2):
+                if elem1.collides_xy(elem2):
+                    return True
+            return False
+        else:
+            return super().does_collide(other)
+
+    def get_intersecting_boxes(self, other: Path) -> tp.Iterator[Box]:
+        """
+        Return all boxes that intersect with any other box in other's path
+        """
+        cdef Box elem1, elem2
+        if isinstance(other, Path2D):
+            cdef Path2D other2 = other
+            for elem1, elem2 in half_product(self, other2):
+                if elem1.collides_xy(elem2):
+                    yield elem1
+        else:
+            return super().get_intersecting_boxes(other)
+
+    cpdef Path2D set_z(self, double z):
+        return Path2D(self.size, [point.set_z(z) for point in self.points])
+
+    cpdef Path2D copy(self):
+        return Path2D(self.size, self.points.copy())
+
+    cpdef Path2D simplify(self):
+        cdef Line line
+        cdef list indices_to_remove = []
+        for prev, mid, next_vector, index in zip(self.points, self.points[1:], self.points[2:], count(self.points, 1)):
+            prev = prev.set_z(0)
+            next_vector = next_vector.set_z(0)
+            mid = mid.set_z(0)
+            line = Line(prev, next_vector)
+            if line.is_colinear(mid):
+                indices_to_remove.append(index)
+        cdef set indices_to_remove_set = set(indices_to_remove)
+        cdef list points = [point for i, point in enumerate(self.points) if i not in indices_to_remove_set]
+        return Path2D(self.size, points)
+
+    cpdef Path2D reverse(self):
+        return Path2D(self.size, self.points[::-1])
+
+    cpdef Path to_path(self):
+        return Path(self.size, self.points.copy())

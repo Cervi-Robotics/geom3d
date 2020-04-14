@@ -1,49 +1,127 @@
 import typing as tp
+
+from satella.coding.sequences import half_product, even, odd
+from satella.coding.structures import HashableWrapper
+
 from ..basic cimport Vector
-from .path cimport Path
+from .path cimport Path2D
 
 
 cdef class MakeNonintersectingPaths:
-    def __init__(self, minimum_flight: float, maximum_flight: float, optimum_flight: float,
-                 path: Path):
+    def __init__(self, minimum_flight: float, maximum_flight: float, path: Path):
         self.minimum_flight = minimum_flight
         self.maximum_flight = maximum_flight
-        self.optimum_flight = optimum_flight
         self.path = path
 
-    cpdef MakeNonintersectingPaths copy(self):
-        return MakeNonintersectingPaths(self.minimum_flight, self.maximum_flight,
-                                        self.optimum_flight, self.path.copy())
+    cpdef double get_ceiling_up(self):
+        return self.maximum_flight - self.path.avg_z()
+
+    cpdef double get_ceiling_down(self):
+        return self.path.avg_z() - self.minimum_flight
 
 
-cdef tuple make_pair_nonintersecting(MakeNonintersectingPaths lower, MakeNonintersectingPaths higher):
+cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
+                                   MakeNonintersectingPaths higher,
+                                   double step) except -1:
     """
     Make a pair of paths nonintersecting
      
-    :type path1: tp.tuple[int, int, Path]
-    :type path2: tp.Tuple[int, int, Path]
-    :return: tp.Tuple[Path, Path]
+    :param lower: path to pull lower on the Z-axis
+    :param higher: path to pull higher on the Z-axis
+    :param step: a step in Z-axis by which to lower the paths
+    :raises ValueError: unable to resolve the path such
     """
-    lower = lower.copy()
-    higher = higher.copy()
-    cdef list indices_higher = lower.path.get_intersecting_boxes_indices(higher.path)
-    cdef list indices_lower = higher.path.get_intersecting_boxes_indices(higher.path)
+    cdef list indices_to_pull_lower, indices_to_pull_higher
+    cdef int i
 
-    return lower, higher
+    cdef list lower_points_backup = lower.path.points.copy()
+    cdef list higher_points_backup = higher.path.points.copy()
+
+    cdef Vector to_higher = Vector(0, 0, +step)
+    cdef Vector to_lower = Vector(0, 0, -step)
+
+    while lower.does_collide(higher):
+        indices_to_pull_lower = lower.path.get_intersecting_boxes_indices(higher.path)
+        indices_to_pull_higher = higher.path.get_intersecting_boxes_indices(lower.path)
+
+        for i in indices_to_pull_lower:
+            lower.path[i] = lower.path[i].add(to_lower)
+            if lower.path[i].z < lower.minimum_flight:
+                lower.path.points = lower_points_backup
+                raise ValueError('Cannot pull lower than minimum flight')
+        for i in indices_to_pull_higher:
+            higher.path[i] = higher.path[i].add(to_higher)
+            if higher.path[i].z > higher.maximum_flight:
+                higher.path.points = higher_points_backup
+                raise ValueError('Cannot pull lower than minimum flight')
+
+    return 0
 
 
-cpdef list make_nonintersecting(list paths):  # type: (tp.List[tp.Tuple[int, int, Path]]) -> tp.List[Path]
+cdef int make_mutually_nonintersecting(MakeNonintersectingPaths a,
+                                       MakeNonintersectingPaths b,
+                                       bint swap) except -1:
+    if a.get_ceiling_down() < a.get_ceiling_up():
+        a, b = b, a
+    if swap:
+        a, b = b, a
+    return make_pair_nonintersecting(a, b, 1.0)
+
+
+cdef are_mutually_nonintersecting(list paths):
+    cdef Path path1, path2
+    for path1, path2 in half_product(paths, paths):
+        if path1 is path2:
+            continue
+        if path1.does_collide(path2):
+            return False
+    return True
+
+
+cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersectingPaths]) -> tp.List[Path]
     """
     Make the paths non-intersecting.
     
     The preferred z-value will be the first path's first point z value.
 
-    This will be done by adjusting their z-value
+    This will be done by adjusting their z-value in place.
     
     Argument is a list of tuple(min_z, max_z, path)
     
     Return will be a list of paths, adjusted so that they are mutually nonintersecting
+    
+    :raises ValueError: upon unable to make the paths nonintersecting. 
+        This means that your case is non-trivial.
     """
-    path_with_preferred_z = [(path.points[0], path) for path in paths]
+    cdef list paths_lower = list(even(paths))
 
-    return []
+    cdef bint a_higher, b_higher
+
+    if are_mutually_nonintersecting(paths):
+        return paths
+
+    cdef Path elem1, elem2
+
+    while not are_mutually_nonintersecting(paths):
+        for elem1, elem2 in half_product(paths, paths):
+            if elem1 == elem2:
+                continue
+            a_higher = elem1 not in paths_lower
+            b_higher = elem2 not in paths_lower
+
+            try:
+                if a_higher == b_higher:
+                    make_mutually_nonintersecting(elem1, elem2, False)
+                elif a_higher:
+                    make_pair_nonintersecting(elem1, elem2, 1.0)
+                else:
+                    make_pair_nonintersecting(elem2, elem1, 1.0)
+            except ValueError:
+                if a_higher == b_higher:
+                    make_mutually_nonintersecting(elem1, elem2, True)
+                elif a_higher:
+                    make_pair_nonintersecting(elem2, elem1, 1.0)
+                else:
+                    make_pair_nonintersecting(elem1, elem2, 1.0)
+
+    return

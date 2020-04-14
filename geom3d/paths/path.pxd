@@ -7,6 +7,7 @@ cdef class Path:
         public Vector size
         public list points
 
+    cpdef double avg_z(self)
     cpdef Path reverse(self)
     cpdef void set_size(self, Vector value)
     cpdef double get_length(self)
@@ -21,3 +22,15 @@ cdef class Path:
     cpdef Vector get_vector_at(self, double length)
     cpdef void insert_at(self, Vector vector, double length)
     cpdef bint does_collide(self, Path other)
+    cpdef Path translate_z(self, double delta)
+
+
+class Path2D(Path):
+    cpdef Path2D reverse(self)
+    cpdef list get_intersecting_boxes_indices(self, Path other)
+    cpdef bint does_collide(self, Path other)
+    cpdef Path2D set_z(self, double z)
+    cpdef Path2D copy(self)
+    cpdef Path2D simplify(self)
+    cpdef Path to_path(self)
+

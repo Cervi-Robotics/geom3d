@@ -1,6 +1,7 @@
 # v0.5
 
 * added `make_nonintersecting`
+* added `Path2D`
 
 # v0.4.3
 

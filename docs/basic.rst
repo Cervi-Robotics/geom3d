@@ -77,6 +77,9 @@ time (only that time is undefined).
 .. autoclass:: geom3d.paths.Path
     :members:
 
+.. autoclass:: geom3d.paths.Path2D
+    :members:
+
 Path can be initialized (that means that it has a box-sized size vector).
 An initialized path can be ``__iter__`ed, yielding boxes that will be
 the positions of the box in a moment in time.
