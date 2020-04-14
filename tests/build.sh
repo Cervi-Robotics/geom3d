@@ -14,8 +14,7 @@ else
 
   cd /io
 
-  apt-get update
-  apt-get install libssl-dev
+  yum install -y openssl-devel
 
   # Compile wheels
   for PYBIN in /opt/python/*/bin; do
