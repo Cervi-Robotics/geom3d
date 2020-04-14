@@ -23,9 +23,10 @@ cdef class Path:
     cpdef void insert_at(self, Vector vector, double length)
     cpdef bint does_collide(self, Path other)
     cpdef Path translate_z(self, double delta)
+    cpdef Path2D to_path2D(self)
 
 
-class Path2D(Path):
+cdef class Path2D(Path):
     cpdef Path2D reverse(self)
     cpdef list get_intersecting_boxes_indices(self, Path other)
     cpdef bint does_collide(self, Path other)

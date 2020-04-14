@@ -277,7 +277,7 @@ cdef class Path:
         return Path2D(self.size, self.points)
 
 
-class Path2D(Path):
+cdef class Path2D(Path):
     """
     Path in which only x, y coordinates ever matter
     """
@@ -292,8 +292,9 @@ class Path2D(Path):
         cdef Box elem1, elem2
         cdef int i
         cdef list indices = []
+        cdef Path2D other2
         if isinstance(other, Path2D):
-            cdef Path2D other2 = other
+            other2 = other
             for row, elem2 in half_product(enumerate(self), other2):
                 i, elem1 = row
                 if elem1.collides_xy(elem2):
@@ -303,9 +304,10 @@ class Path2D(Path):
             return super().get_intersecting_boxes_indices(other)
 
     cpdef bint does_collide(self, Path other):
+        cdef Path2D other2
+        cdef Box elem1, elem2
         if isinstance(other, Path2D):
-            cdef Box elem1, elem2
-            cdef Path2D other2 = other
+            other2 = other
             for elem1, elem2 in half_product(self, other2):
                 if elem1.collides_xy(elem2):
                     return True
@@ -318,8 +320,9 @@ class Path2D(Path):
         Return all boxes that intersect with any other box in other's path
         """
         cdef Box elem1, elem2
+        cdef Path2D other2
         if isinstance(other, Path2D):
-            cdef Path2D other2 = other
+            other2 = other
             for elem1, elem2 in half_product(self, other2):
                 if elem1.collides_xy(elem2):
                     yield elem1
@@ -334,6 +337,7 @@ class Path2D(Path):
 
     cpdef Path2D simplify(self):
         cdef Line line
+        cdef int index
         cdef list indices_to_remove = []
         for prev, mid, next_vector, index in zip(self.points, self.points[1:], self.points[2:], count(self.points, 1)):
             prev = prev.set_z(0)
