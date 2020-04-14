@@ -16,8 +16,6 @@ else
 
   cd /io
 
-  yum install -y openssl-devel
-
   # Compile wheels
   for PYBIN in /opt/python/*/bin; do
       "${PYBIN}/pip" install -r /io/requirements.txt
