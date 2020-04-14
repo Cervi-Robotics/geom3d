@@ -4,7 +4,7 @@ set -x
 set -e
 
 if [ "$1" == "travis" ]; then
-  docker run --rm -it -e PLAT=$PLAT -v `pwd`:/io "$DOCKER_IMAGE" bash /io/tests/build.sh
+  docker run --rm -it -e PYPI_USER="$PYPI_USER" -e PYPI_PWD="$PYPI_PWD" -e PLAT=$PLAT -v `pwd`:/io "$DOCKER_IMAGE" bash /io/tests/build.sh
 
   pip install twine
   twine upload -u "$PYPI_USER" -p "$PYPI_PWD" wheelhouse/geom3d-*manylinux*.whl
