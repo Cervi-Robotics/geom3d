@@ -261,7 +261,11 @@ cdef class Polygon2D:
         if include_last_point:
             yield self.points[-1]
 
+
 cdef class PointOnPolygon2D:
+    """
+    A point somewhere on the polygon's perimeter.
+    """
     def __init__(self, polygon: Polygon2D, distance_from_start: float, offset: float):
         self.polygon = polygon
         self._distance_from_start = distance_from_start
@@ -306,7 +310,7 @@ cdef class PointOnPolygon2D:
         """
         return self.get_segment_and_vector()[1]
 
-    cpdef object get_segment_and_vector(self):
+    cpdef tuple get_segment_and_vector(self):
         """
         Return both the vector (as in :func:`~geom3d.polygons.PointOnPolygon2D.to_vector`) and the
         segment on which it lies.

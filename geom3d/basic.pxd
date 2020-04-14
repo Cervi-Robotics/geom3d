@@ -10,7 +10,12 @@ cdef class Vector:
     cpdef double dot_product(self, Vector other)
     cpdef Vector update(self, object x= *, object y= *, object z= *)
     cpdef Vector unitize(self)
+    cpdef Vector zero_x(self)
+    cpdef Vector zero_y(self)
     cpdef Vector zero_z(self)
+    cpdef Vector set_x(self, double x)
+    cpdef Vector set_y(self, double y)
+    cpdef Vector set_z(self, double z)
     cdef bint eq(self, Vector other)
     cpdef Vector copy(self)
     cpdef Vector add(self, Vector other)
@@ -54,10 +59,14 @@ cdef class PointOnLine:
     cpdef PointOnLine add(self, double other)
     cdef double get_relative_position(self)
 
-cdef class Line:
+cdef class VectorStartStop:
     cdef:
         readonly Vector start
         readonly Vector stop
+
+
+cdef class Line(VectorStartStop):
+    cdef:
         readonly Vector unit_vector
         readonly double length
         readonly Vector stop_sub_start  # a shorthand for self.stop.sub(self.start)
@@ -68,16 +77,15 @@ cdef class Line:
     cpdef bint is_colinear(self, Vector vector)
 
 
-cdef class Box:
-    cdef:
-        readonly Vector start
-        readonly Vector stop
+cdef class Box(VectorStartStop):
 
     cpdef bint collides(self, Box other)  # type: (Box) -> bool
     cpdef Box translate(self, Vector p)
     cpdef Box relocate_to_zero(self)
     cpdef double get_volume(self)
+    cpdef double get_surface_area_xy(self)
     cpdef double get_surface_area(self)
     cdef Vector get_center(self)
     cpdef Box center_at(self, Vector p)
     cdef Vector get_size(self)
+    cpdef Line get_diagonal(self)

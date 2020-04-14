@@ -35,4 +35,4 @@ cdef class PointOnPolygon2D:
     cdef double get_distance_from_start(self)
     cpdef Vector get_unit_vector_towards_polygon(self)
     cpdef Vector get_unit_vector_away_polygon(self)
-    cpdef object get_segment_and_vector(self)  # type: () -> tp.Tuple[Line, Vector]
+    cpdef tuple get_segment_and_vector(self)  # type: () -> tp.Tuple[Line, Vector]

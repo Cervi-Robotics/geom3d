@@ -1,6 +1,8 @@
 # v0.4.3
 
 * added `Path.simplify`
+* added `Path.get_vector_at`
+* added `Path.insert_at`
 
 # v0.4.2
 

@@ -8,10 +8,15 @@ from geom3d import Vector, Box, Line
 
 class TestBasic(unittest.TestCase):
 
+    def test_centered_at(self):
+        box = Box(Vector(0, 0, 0), Vector(10, 10, 10))
+        self.assertEqual(box.center_at(Vector(0, 0)), Box(Vector(-5, -5, -5), Vector(5, 5, 5)))
+
     def test_volume_and_surface_area(self):
         box = Box(Vector(1, 4, 3), Vector(4, 7, 6))
         self.assertEqual(box.get_volume(), 27)
-        self.assertEqual(box.get_surface_area(), 9)
+        self.assertEqual(box.get_surface_area(), 9*6)
+        self.assertEqual(box.get_surface_area_xy(), 9)
 
     def test_collision(self):
         box1 = Box(Vector(0, 0, 0), Vector(10, 10, 10))
@@ -27,6 +32,11 @@ class TestBasic(unittest.TestCase):
     def test_line(self):
         line = Line(Vector(0, 0), Vector(1, 0))
         self.assertEqual(line.unit_vector, Vector(1, 0))
+
+    def test_cross_product(self):
+        vec = Vector(3, -3, 1)
+        vec2 = Vector(4, 9, 2)
+        self.assertEqual(vec.cross_product(vec2), Vector(-15, -2, 39))
 
     def test_contains(self):
         line = Line(Vector(0, 0), Vector(1, 1))

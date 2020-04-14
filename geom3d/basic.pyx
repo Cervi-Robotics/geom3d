@@ -9,8 +9,15 @@ logger = logging.getLogger(__name__)
 
 __all__ = ['Vector', 'Box', 'Line', 'PointOnLine']
 
+
 cdef class Vector:
-    """A 3D vector"""
+    """
+    A 3D vector.
+
+    This class is immutable. Use set_* or update() to return an object containing new values
+
+    This is both eq-able and hash-able
+    """
     def __init__(self, x: float, y: float, z: float = 0):
         self.x = x
         self.y = y
@@ -21,6 +28,9 @@ cdef class Vector:
         return Vector(self.x, self.y, self.z)
 
     def __copy__(self):
+        return self.copy()
+
+    def __deepcopy__(self, memo={}):
         return self.copy()
 
     cpdef double distance_to(self, Vector other):
@@ -34,8 +44,8 @@ cdef class Vector:
     cpdef Vector cross_product(self, Vector other):
         """Calculate the cross product between this vector and the other"""
         return Vector(self.y * other.z - self.z * other.y,
-                      self.z * other.y - self.x * other.z,
-                      self.x * other.y - self.y * other.z)
+                      self.z * other.x - self.x * other.z,
+                      self.x * other.y - self.y * other.x)
 
     def __hash__(self) -> int:
         return hash(self.x) ^ hash(self.y) ^ hash(self.z)
@@ -70,8 +80,28 @@ cdef class Vector:
         return self.eq(other)
 
     cpdef Vector zero_z(self):
-        """Return self, but with z coordinate zeroed"""
+        """
+        Syntactic sugar for
+        
+        >>> vector.update(z=0)
+        """
         return Vector(self.x, self.y, 0)
+
+    cpdef Vector zero_y(self):
+        """
+        Syntactic sugar for
+        
+        >>> vector.update(y=0)
+        """
+        return Vector(self.x, 0, self.z)
+
+    cpdef Vector zero_x(self):
+        """
+        Syntactic sugar for
+        
+        >>> vector.update(x=0)
+        """
+        return Vector(0, self.y, self.z)
 
     @property
     def length(self) -> float:
@@ -83,6 +113,18 @@ cdef class Vector:
         if iszero(length):
             return ZERO_POINT
         return Vector(self.x / length, self.y / length, self.z / length)
+
+    cpdef Vector set_x(self, double x):
+        """Return self, but with x set to a target value"""
+        return Vector(x, self.y, self.z)
+
+    cpdef Vector set_y(self, double y):
+        """Return self, but with y set to a target value"""
+        return Vector(self.x, y, self.z)
+
+    cpdef Vector set_z(self, double z):
+        """Return self, but with z set to a target value"""
+        return Vector(self.x, self.y, z)
 
     @classmethod
     def zero(cls) -> Vector:
@@ -121,9 +163,22 @@ cdef class Vector:
         return mul(self, other)
 
     cpdef Vector neg(self):
+        """
+        Return this vector, but with it's components negated.
+        
+        Syntactic sugar for:
+        
+        >>> Vector(-vector.x, -vector.y, -vector.z)
+        """
         return neg(self)
 
     cpdef Vector vabs(self):
+        """Return this vector, as constituting of absolute values of it's components.
+        
+        Syntactic sugar for:
+        
+        >>> Vector(abs(vector.x), abs(vector.y), abs(vector.z))
+        """
         return vabs(self)
 
     cpdef Vector truediv(self, double other):
@@ -163,22 +218,58 @@ cdef class PointOnLine:
         """Return the physical point given PointOnLine corresponds to"""
         return self.line.start.add(self.line.unit_vector.mul(self.length))
 
-cdef class Line:
+cdef class VectorStartStop:
+    """
+    A class having a start and a stop
+    """
+    def __init__(self, start: Vector, stop: Vector):
+        self.start = start
+        self.stop = stop
+
+    def __hash__(self):
+        return hash(self.start) ^ hash(self.stop)
+
+    def __eq__(self, other: VectorStartStop) -> bool:
+        return self.start.eq(other.start) and self.stop.eq(other.stop)
+
+    def copy(self) -> VectorStartStop:
+        return self.__class__(self.start, self.stop)
+
+    def __copy__(self):
+        return self.copy()
+
+    def __deepcopy__(self, memo={}):
+        return self.copy()
+
+    def __str__(self) -> str:
+        return f'<{self.__class__} {self.start} {self.stop}>'
+
+    def __repr__(self) -> str:
+        return f'{self.__class__}({self.start}, {self.stop})'
+
+cdef class Line(VectorStartStop):
     """
     A line in 3D. It starts somewhere and ends somewhere.
+
+    This class is immutable and hashable.
 
     :param start: where does the line start
     :param stop: where does the line end
     """
 
+    def __init__(self, start: Vector, stop: Vector):
+        super().__init__(start, stop)
+        self.stop_sub_start = stop.sub(start)
+        self.unit_vector = self.stop_sub_start.unitize()
+        self.length = self.stop_sub_start.get_length()
+
     cpdef double distance_to_line(self, Vector vector):
         """Return a shortest distance given vector has to an axis defined by this line"""
-        return vector.sub(self.start).cross_product(self.stop_sub_start).get_length() / self.stop_sub_start.get_length()
+        cdef Vector cross_product = vector.sub(self.start).cross_product(vector)
+        return cross_product.get_length() / self.length
 
     cpdef bint is_colinear(self, Vector vector):
-        cdef double dist = self.distance_to_line(vector)
-        logger.warning('Is colinear %s:%s:%s = %s' % (self.start, self.stop, vector, dist))
-        return iszero(dist)
+        return iszero(vector.sub(self.start).cross_product(self.stop_sub_start).get_length())
 
     def __contains__(self, vec: Vector) -> bool:
         """Does this line contain given vector?"""
@@ -223,16 +314,6 @@ cdef class Line:
         return self.unit_vector.dot_product(vec.sub(self.stop).unitize()) < 0 and \
                self.unit_vector.neg().dot_product(vec.sub(self.start).unitize()) < 0
 
-    def __str__(self) -> str:
-        return f'<Line {self.start} {self.stop}>'
-
-    def __init__(self, start: Vector, stop: Vector):
-        self.start = start
-        self.stop = stop
-        self.stop_sub_start = stop.sub(start)
-        self.unit_vector = self.stop_sub_start.unitize()
-        self.length = self.stop_sub_start.get_length()
-
     cpdef PointOnLine get_point_relative(self, double distance_from_start):
         """
         get_point() but relative to the entire length of the line
@@ -267,12 +348,10 @@ cdef class Line:
         if include_last_point:
             yield self.stop
 
-    def __eq__(self, other: Line) -> bool:
-        return self.start == other.start and self.stop == other.stop
 
 ZERO_POINT = Vector(0, 0, 0)
 
-cdef class Box:
+cdef class Box(VectorStartStop):
     """
     An axis-aligned box that starts at some place and ends at some place.
 
@@ -280,29 +359,55 @@ cdef class Box:
 
     >>> start.x < stop.x and start.y < stop.y and start.z < stop.z
 
+    Otherwise coordinates will be extracted and compared place-wise.
+
+    This class is immutable and hashable.
+
     :param start: beginning of this box
     :param stop: end of this box
     """
     def __init__(self, start: Vector, stop: Vector):
-        self.start = start
-        self.stop = stop
+        cdef double min_x, max_x, min_y, max_y, min_z, max_z
+        if start.x > stop.x:
+            min_x = stop.x
+            max_x = start.x
+        else:
+            min_x = start.x
+            max_x = stop.x
+
+        if start.y > stop.y:
+            min_y = stop.y
+            max_y = start.y
+        else:
+            min_y = start.y
+            max_y = stop.y
+
+        if start.z > stop.z:
+            min_z = stop.z
+            max_z = start.z
+        else:
+            min_z = start.z
+            max_z = stop.z
+
+        super().__init__(Vector(min_x, min_y, min_z), Vector(max_x, max_y, max_z))
+
+    cpdef Line get_diagonal(self):
+        return Line(self.start, self.stop)
 
     cpdef bint collides(self, Box other):
         """Does this box share at least one point with the other box?"""
-        cdef bint x_cond = self.start.x <= other.start.x <= self.stop.x
 
-        x_cond |= other.start.x <= self.start.x <= other.stop.x
-        x_cond |= self.start.x <= other.stop.x <= self.stop.x
+        cdef bint x_cond = check_collision_x(self.start, other.start, self.stop) or \
+            check_collision_x(other.start, self.start, other.stop) or \
+            check_collision_x(self.start, other.stop, self.stop)
 
-        cdef bint y_cond = self.start.y <= other.start.y <= self.stop.y
+        cdef bint y_cond = check_collision_y(self.start, other.start, self.stop) or \
+            check_collision_y(other.start, self.start, other.stop) or \
+            check_collision_y(self.start, other.stop, self.stop)
 
-        y_cond |= other.start.y <= self.start.y <= other.stop.y
-        y_cond |= self.start.y <= other.stop.y <= self.stop.y
-
-        cdef bint z_cond = self.start.z <= other.start.z <= self.stop.z
-
-        z_cond |= other.start.z <= self.start.z <= other.stop.z
-        z_cond |= self.start.z <= other.stop.z <= self.stop.z
+        cdef bint z_cond = check_collision_z(self.start, other.start, self.stop) or \
+            check_collision_z(other.start, self.start, other.stop) or \
+            check_collision_z(self.start, other.stop, self.stop)
 
         return x_cond and y_cond and z_cond
 
@@ -325,6 +430,9 @@ cdef class Box:
         :param center: center point
         :param size: _size of the box
         """
+        assert size.x >= 0
+        assert size.y >= 0
+        assert size.z >= 0
         start = center - size / 2
         stop = center + size / 2
         return Box(start, stop)
@@ -335,23 +443,16 @@ cdef class Box:
         return self.get_center()
 
     cdef Vector get_center(self):
-        cdef double x = (self.stop.x - self.start.x) / 2
-        cdef double y = (self.stop.y - self.start.y) / 2
-        cdef double z = (self.stop.z - self.start.z) / 2
-        return Vector(x, y, z)
-
-    cpdef double get_volume(self):
-        """Calculate the volume of this box"""
-        cdef Vector size = self.get_size()
-        return size.x * size.y * size.z
-
-    cpdef double get_surface_area(self):
         """
-        Get surface area of this box. This will be the surface area that this box casts onto
-        the XY plane
+        Return a vector that appears directly in the center of that box
         """
-        cdef Vector size = self.get_size()
-        return size.x * size.y
+        return Vector((self.stop.x + self.start.x) / 2,
+                      (self.stop.y + self.start.y) / 2,
+                      (self.stop.z + self.start.z) / 2)
+
+    cpdef Box center_at(self, Vector p):
+        """Return this box as if centered at point p"""
+        return Box.centered_with_size(p, self.size)
 
     @property
     def size(self) -> Vector:
@@ -359,12 +460,44 @@ cdef class Box:
         return self.get_size()
 
     cdef Vector get_size(self):
+        # sorting in the beginning asserts that the difference is positive
         cdef Vector size = self.stop.sub(self.start)
-        cdef double x = size.x
-        cdef double y = size.y
-        cdef double z = size.z
-        return Vector(fabs(x), fabs(y), fabs(z))
+        return Vector(size.x, size.y, size.z)
 
-    cpdef Box center_at(self, Vector p):
-        """Return this box as if centered at point p"""
-        return Box.get_centered_with_size(p, self.size)
+    cpdef double get_volume(self):
+        """Calculate the volume of this box"""
+        # sorting in the beginning asserts that the difference is positive
+        cdef Vector size = self.get_size()
+        return size.x * size.y * size.z
+
+    cpdef double get_surface_area_xy(self):
+        """
+        Get surface area of this box. This will be the surface area that this box casts onto
+        the XY plane
+        """
+        cdef Vector size = self.get_size()
+        return size.x * size.y
+
+    cpdef double get_surface_area(self):
+        """
+        Get the total surface area of this box
+        """
+        # sorting in the beginning asserts that the difference is positive
+
+        cdef double line_a = self.stop.x - self.start.x
+        cdef double line_b = self.stop.y - self.start.y
+        cdef double line_c = self.stop.z - self.start.z
+
+        return (line_a*line_b + line_b*line_c + line_c*line_a) * 2
+
+
+cdef inline bint check_collision_x(Vector start, Vector mid, Vector stop):
+    return start.x <= mid.x <= stop.x
+
+
+cdef inline bint check_collision_y(Vector start, Vector mid, Vector stop):
+    return start.y <= mid.y <= stop.y
+
+
+cdef inline bint check_collision_z(Vector start, Vector mid, Vector stop):
+    return start.z <= mid.z <= stop.z

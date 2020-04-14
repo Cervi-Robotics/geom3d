@@ -1,0 +1,22 @@
+stages:
+  - test
+
+test_python3.5:
+  image: python:3.5
+  script:
+    - bash tests/test.sh
+
+test_python3.6:
+  image: python:3.6
+  script:
+    - bash tests/test.sh
+
+test_python3.7:
+  image: python:3.7
+  script:
+    - bash tests/test.sh
+
+test_python3.8:
+  image: python:3.8
+  script:
+    - bash tests/test.sh
