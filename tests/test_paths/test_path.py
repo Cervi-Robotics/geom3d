@@ -45,6 +45,8 @@ class TestPath(unittest.TestCase):
         intersecting_boxes = list(path1.get_intersecting_boxes(path2))
         self.assertGreater(len(intersecting_boxes), 1)
 
+        self.assertTrue(path1.does_collide(path2))
+
     def test_length(self):
         path1 = Path.from_to(Vector(0, 0), Vector(10, 10), Vector(1, 1), 0.1)
         self.assertAlmostEqual(path1.get_length(), math.sqrt(200), 1)
