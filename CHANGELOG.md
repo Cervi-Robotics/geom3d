@@ -1,3 +1,7 @@
+# v0.4.4
+
+* _TBA_
+
 # v0.4.3
 
 * added `Path.simplify`
