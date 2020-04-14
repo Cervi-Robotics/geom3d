@@ -215,7 +215,14 @@ cdef class Path:
             if elem1.collides(elem2):
                 yield elem1
 
-    cpdef list get_intersecting_boxes_indices(self, other: Path):
+    cpdef bint does_collide(self, Path other):
+        cdef Box elem1, elem2
+        for elem1, elem2 in half_product(enumerate(self), path):
+            if elem1.collides(elem2):
+                return True
+        return False
+
+    cpdef list get_intersecting_boxes_indices(self, Path other):
         """
         Return all indices of boxes that intersect with any other box in other's path
         """

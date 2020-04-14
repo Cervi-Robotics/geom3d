@@ -20,3 +20,4 @@ cdef class Path:
     cpdef list get_intersecting_boxes_indices(self, Path other)
     cpdef Vector get_vector_at(self, double length)
     cpdef void insert_at(self, Vector vector, double length)
+    cpdef bint does_collide(self, Path other)

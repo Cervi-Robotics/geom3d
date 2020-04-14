@@ -16,7 +16,7 @@ cdef class MakeNonintersectingPaths:
                                         self.optimum_flight, self.path.copy())
 
 
-cdef object make_pair_nonintersecting(MakeNonintersectingPaths lower, MakeNonintersectingPaths higher):
+cdef tuple make_pair_nonintersecting(MakeNonintersectingPaths lower, MakeNonintersectingPaths higher):
     """
     Make a pair of paths nonintersecting
      
@@ -28,6 +28,9 @@ cdef object make_pair_nonintersecting(MakeNonintersectingPaths lower, MakeNonint
     higher = higher.copy()
     cdef list indices_higher = lower.path.get_intersecting_boxes_indices(higher.path)
     cdef list indices_lower = higher.path.get_intersecting_boxes_indices(higher.path)
+
+    return lower, higher
+
 
 cpdef list make_nonintersecting(list paths):  # type: (tp.List[tp.Tuple[int, int, Path]]) -> tp.List[Path]
     """
