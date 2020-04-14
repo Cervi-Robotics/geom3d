@@ -79,6 +79,7 @@ cdef class Line(VectorStartStop):
 
 cdef class Box(VectorStartStop):
 
+    cpdef bint collides_xy(self, Box other)
     cpdef bint collides(self, Box other)  # type: (Box) -> bool
     cpdef Box translate(self, Vector p)
     cpdef Box relocate_to_zero(self)
