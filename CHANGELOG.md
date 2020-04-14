@@ -1,6 +1,6 @@
-# v0.4.4
+# v0.5
 
-* _TBA_
+* added `make_nonintersecting`
 
 # v0.4.3
 
