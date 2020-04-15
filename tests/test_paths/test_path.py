@@ -47,6 +47,7 @@ class TestPath(unittest.TestCase):
 
         self.assertTrue(path1.does_collide(path2))
 
+    @unittest.skip('not ready')
     def test_make_nonintersecting(self):
         p1 = Path.from_to(Vector(0,0,2), Vector(10,10, 2), Vector(1, 1, 1), 0.1)
         p2 = Path.from_to(Vector(5, 5, 2), Vector(15, 15, 2), Vector(1, 1, 1), 0.1)

@@ -1,7 +1,7 @@
-# v0.5
+# v0.4.4
 
-* added `make_nonintersecting`
 * added `Path2D`
+* make fields of `Coordinates` readable by Python
 
 # v0.4.3
 
