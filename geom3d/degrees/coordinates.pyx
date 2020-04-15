@@ -82,7 +82,13 @@ cdef class XYPoint:
         self.y -= other.y
         return self
 
+
 cdef class Coordinates:
+    """
+    A position on the surface of the Earth, ignoring the height.
+
+    This is immutable, eq-able and hash-able.
+    """
     def __init__(self, lat: float, lon: float):
         self.lat = lat
         self.lon = lon
@@ -95,6 +101,12 @@ cdef class Coordinates:
         reference frame, use :class:`geom3d.degrees.XYPointCollection` instead
         """
         return XYPointCollection([self], planet)[0]
+
+    def __eq__(self, other: Coordinates) -> bool:
+        return self.lat == other.lat and self.lon == other.lon
+
+    def __hash__(self) -> int:
+        return hash(self.lat) ^ hash(self.lon)
 
 
 class XYPointCollection(collections.abc.Sequence):

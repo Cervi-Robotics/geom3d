@@ -24,5 +24,5 @@ cdef class XYPoint:
 
 cdef class Coordinates:
     cdef:
-        public double lat
-        public double lon
+        readonly double lat
+        readonly double lon

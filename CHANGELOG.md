@@ -1,6 +1,6 @@
-# v0.5
+# v0.4.5
 
-* added `make_nonintersecting`
+* `Coordinates` are now eq-able and hashable
 
 # v0.4.4
 
