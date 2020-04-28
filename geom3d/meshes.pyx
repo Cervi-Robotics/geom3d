@@ -2,7 +2,7 @@ import typing as tp
 
 from libc.math cimport sqrt
 
-from ..basic cimport Vector, Line
+from .basic cimport Vector, Line
 
 
 cdef class Triangle:
@@ -22,11 +22,11 @@ cdef class Triangle:
         a, b, c = self.get_edges_length()
         return a + b + c
 
-    cpdef object get_edges(self):  # type: () -> tp.Tuple[Line, Line, Line]
+    cpdef tuple get_edges(self):  # type: () -> tp.Tuple[Line, Line, Line]
         """Return edges of this triangle"""
-        return [Line(self.a, self.b), Line(self.b, self.c), Line(self.c, self.a)]
+        return Line(self.a, self.b), Line(self.b, self.c), Line(self.c, self.a)
 
-    cpdef object get_edges_length(self):  # type: () -> tp.Tuple[float, float, float]
+    cpdef tuple get_edges_length(self):  # type: () -> tp.Tuple[float, float, float]
         """Return lengths of edges corresponding to n-th edge"""
         return self.a.distance_to(self.b), self.b.distance_to(self.c), \
                self.c.distance_to(self.b)

@@ -1,4 +1,6 @@
+import itertools
 import typing as tp
+import logging
 import warnings
 from copy import copy
 from satella.coding.sequences import half_product, add_next, count
@@ -6,6 +8,8 @@ from satella.coding.sequences import half_product, add_next, count
 from ..base cimport iszero, isclose
 from ..basic cimport Box, Vector, Line
 from ..exceptions import ValueWarning, NotReadyError
+
+logger = logging.getLogger(__name__)
 
 
 cdef class Path:
@@ -226,15 +230,17 @@ cdef class Path:
         cdef Path path = other
         cdef Box elem1, elem2
 
-        for elem1, elem2 in half_product(self, path):
-            if elem1.collides(elem2):
-                yield elem1
+        for elem1 in self:
+            for elem2 in path:
+                if elem1.collides(elem2):
+                    yield elem1
 
     cpdef bint does_collide(self, Path other):
         cdef Box elem1, elem2
-        for elem1, elem2 in half_product(self, other):
-            if elem1.collides(elem2):
-                return True
+        for elem1 in self:
+            for elem2 in other:
+                if elem1.collides(elem2):
+                    return True
         return False
 
     cpdef list get_intersecting_boxes_indices(self, Path other):
@@ -245,10 +251,11 @@ cdef class Path:
         cdef Box elem1, elem2
         cdef int i
         cdef list indices = []
-        for row, elem2 in half_product(enumerate(self), path):
-            i, elem1 = row
-            if elem1.collides(elem2):
-                indices.append(i)
+        for row, elem1 in enumerate(self):
+            for elem2 in path:
+                i, elem1 = row
+                if elem1.collides(elem2):
+                    indices.append(i)
         return indices
 
     cpdef double get_length(self):
@@ -295,10 +302,10 @@ cdef class Path2D(Path):
         cdef Path2D other2
         if isinstance(other, Path2D):
             other2 = other
-            for row, elem2 in half_product(enumerate(self), other2):
-                i, elem1 = row
-                if elem1.collides_xy(elem2):
-                    indices.append(i)
+            for i, elem1 in enumerate(self):
+                for elem2 in other2:
+                    if elem1.collides_xy(elem2):
+                        indices.append(i)
             return indices
         else:
             return super().get_intersecting_boxes_indices(other)
@@ -308,9 +315,10 @@ cdef class Path2D(Path):
         cdef Box elem1, elem2
         if isinstance(other, Path2D):
             other2 = other
-            for elem1, elem2 in half_product(self, other2):
-                if elem1.collides_xy(elem2):
-                    return True
+            for elem1 in self:
+                for elem2 in other2:
+                    if elem1.collides_xy(elem2):
+                        return True
             return False
         else:
             return super().does_collide(other)
@@ -323,9 +331,10 @@ cdef class Path2D(Path):
         cdef Path2D other2
         if isinstance(other, Path2D):
             other2 = other
-            for elem1, elem2 in half_product(self, other2):
-                if elem1.collides_xy(elem2):
-                    yield elem1
+            for elem1 in self:
+                for elem2 in other2:
+                    if elem1.collides_xy(elem2):
+                        yield elem1
         else:
             return super().get_intersecting_boxes(other)
 
