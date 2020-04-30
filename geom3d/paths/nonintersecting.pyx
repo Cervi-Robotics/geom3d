@@ -1,10 +1,14 @@
 import typing as tp
+import logging
 
 from satella.coding.sequences import half_cartesian, even, odd
 from satella.coding.structures import HashableWrapper
 
 from ..basic cimport Vector
 from .path cimport Path2D
+
+
+logger = logging.getLogger(__name__)
 
 
 cdef class MakeNonintersectingPaths:
@@ -40,7 +44,7 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
     cdef Vector to_higher = Vector(0, 0, +step)
     cdef Vector to_lower = Vector(0, 0, -step)
 
-    while lower.does_collide(higher):
+    while lower.path.does_collide(higher.path):
         indices_to_pull_lower = lower.path.get_intersecting_boxes_indices(higher.path)
         indices_to_pull_higher = higher.path.get_intersecting_boxes_indices(lower.path)
 
@@ -100,10 +104,10 @@ cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersecti
     if are_mutually_nonintersecting(paths):
         return paths
 
-    cdef Path elem1, elem2
+    cdef MakeNonintersectingPaths elem1, elem2
 
     while not are_mutually_nonintersecting(paths):
-        for elem1, elem2 in half_cartesian(paths):
+        for elem1, elem2 in half_cartesian(paths, include_same_pairs=False):
             if elem1 == elem2:
                 continue
             a_higher = elem1 not in paths_lower
@@ -124,4 +128,4 @@ cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersecti
                 else:
                     make_pair_nonintersecting(elem1, elem2, 1.0)
 
-    return
+    return [path.path for path in paths]

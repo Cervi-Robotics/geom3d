@@ -52,8 +52,8 @@ class TestPath(unittest.TestCase):
         p2 = Path.from_to(Vector(5, 5, 2), Vector(15, 15, 2), Vector(1, 1, 1), 0.1)
         self.assertTrue(p1.does_collide(p2))
 
-        m1 = MakeNonintersectingPaths(0, 10, p1)
-        m2 = MakeNonintersectingPaths(0, 10, p2)
+        m1 = MakeNonintersectingPaths(-5, 10, p1)
+        m2 = MakeNonintersectingPaths(-5, 10, p2)
         make_nonintersecting([m1, m2])
         self.assertFalse(p1.does_collide(p2))
 
