@@ -361,7 +361,7 @@ cdef class Line(VectorStartStop):
         no intersection
         """
         cdef:
-            Vector da, db, dc, cp_dc_db, cp_da_db
+            Vector da, db, dc, cp_dc_db, cp_da_db, cp_dc_da
             double s, t, sq_norm2
 
         da = self.stop.sub(self.start)
@@ -370,8 +370,9 @@ cdef class Line(VectorStartStop):
 
         cp_dc_db = dc.cross_product(db)
         cp_dc_da = dc.cross_product(da)
+        cp_da_db = da.cross_product(db)
 
-        sq_norm2 = da.cross_product(db).dot_square()
+        sq_norm2 = cp_da_db.dot_square()
 
         s = cp_dc_db.dot_product(cp_da_db) / sq_norm2
         t = cp_dc_da.dot_product(cp_da_db) / sq_norm2
