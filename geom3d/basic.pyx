@@ -23,6 +23,9 @@ cdef class Vector:
         self.y = y
         self.z = z
 
+    cpdef bint is_zero(self):
+        return iszero(self.x) and iszero(self.y) and iszero(self.z)
+
     cpdef Vector copy(self):
         """Return a copy of this vector"""
         return Vector(self.x, self.y, self.z)
@@ -53,6 +56,10 @@ cdef class Vector:
     cpdef double dot_product(self, Vector other):
         """Calculate the dot product between this vector and the other"""
         return self.x * other.x + self.y * other.y + self.z * other.z
+
+    cpdef double dot_square(self):
+        """A dot product between this vector and itself"""
+        return self.x*self.x + self.y*self.y + self.z*self.z
 
     def __add__(self, other: Vector) -> Vector:
         return add(self, other)
@@ -348,6 +355,31 @@ cdef class Line(VectorStartStop):
         if include_last_point:
             yield self.stop
 
+    cpdef Vector get_intersection_point(self, Line other):
+        """
+        Get an intersection point of these two lines, or None if there's
+        no intersection
+        """
+        cdef:
+            Vector da, db, dc, cp_dc_db, cp_da_db
+            double s, t, sq_norm2
+
+        da = self.stop.sub(self.start)
+        db = other.stop.sub(other.start)
+        dc = other.start.sub(self.start)
+
+        cp_dc_db = dc.cross_product(db)
+        cp_dc_da = dc.cross_product(da)
+
+        sq_norm2 = da.cross_product(db).dot_square()
+
+        s = cp_dc_db.dot_product(cp_da_db) / sq_norm2
+        t = cp_dc_da.dot_product(cp_da_db) / sq_norm2
+
+        if ( 0 <= s <= 1) and (0 <= t <= 1):
+            return Vector(self.start.x + da.x * s,
+                          self.start.y + da.y * s,
+                          self.start.z + da.z * s)
 
 ZERO_POINT = Vector(0, 0, 0)
 

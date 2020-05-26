@@ -8,6 +8,7 @@ cdef class Vector:
 
     cpdef Vector cross_product(self, Vector other)
     cpdef double dot_product(self, Vector other)
+    cpdef double dot_square(self)
     cpdef Vector update(self, object x= *, object y= *, object z= *)
     cpdef Vector unitize(self)
     cpdef Vector zero_x(self)
@@ -26,6 +27,7 @@ cdef class Vector:
     cpdef Vector truediv(self, double other)
     cdef double get_length(self)
     cpdef double distance_to(self, Vector other)
+    cpdef bint is_zero(self)
 
     
 cpdef inline Vector add(Vector self, Vector other):
@@ -75,6 +77,7 @@ cdef class Line(VectorStartStop):
     cpdef PointOnLine get_point(self, double distance_from_start)
     cpdef PointOnLine get_point_relative(self, double distance_from_start)
     cpdef bint is_colinear(self, Vector vector)
+    cpdef Vector get_intersection_point(self, Line other)
 
 
 cdef class Box(VectorStartStop):

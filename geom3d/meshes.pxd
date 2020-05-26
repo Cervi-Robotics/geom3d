@@ -2,6 +2,13 @@ import typing as tp
 
 from .basic cimport Vector, Line
 
+cdef class Ray:
+    cdef:
+        readonly Vector start
+        readonly Vector unit_vector
+
+    cpdef bint collides(self, Triangle triangle)
+
 cdef class Triangle:
     cdef:
         public Vector a

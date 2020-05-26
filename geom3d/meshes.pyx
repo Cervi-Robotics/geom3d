@@ -2,8 +2,61 @@ import typing as tp
 
 from libc.math cimport sqrt
 
+from .base cimport iszero, isclose
 from .basic cimport Vector, Line
 
+
+cdef class Ray:
+    """
+    A ray that has an origin point and a direction vector
+    """
+    def __init__(self, start: Vector, unit_vector: Vector):
+        self.start = start
+        self.unit_vector = unit_vector
+        assert isclose(unit_vector.length, 1), 'Unit vector has to be of length 1'
+
+    cpdef bint collides(self, Triangle triangle):
+        cdef:
+            Vector u, v, n, w0, w
+            double r, a, b, uu, uv, vv, wu, wv, d, s, t
+            bint result
+
+        u = triangle.b.sub(triangle.a)
+        v = triangle.c.sub(triangle.b)
+        n = u.cross_product(v)
+
+        if n.is_zero():
+            return False
+
+        w0 = self.start.sub(triangle.a)
+        a = n.neg().dot_product(w0)
+        b = n.dot_product(self.unit_vector)
+
+        if iszero(b):
+            return iszero(a)
+
+        r = a / b
+        if r < 0:
+            return False
+
+        p = self.start.add(self.unit_vector.mul(r))
+        uu = u.dot_square()
+        uv = u.dot_product(v)
+        vv = v.dot_square()
+        w = p.sub(triangle.a)
+        wu = w.dot_product(u)
+        wv = w.dot_product(v)
+        d = uv * uv - uu * vv
+        s = (uv * wv - vv * wu) / d
+
+        if s < 0 or s > 1:
+            return False
+
+        t = (uv*wu - uu*wv) / d
+
+        if t < 0 and (s+t) > 1:
+            return False
+        return True
 
 cdef class Triangle:
     """

@@ -18,6 +18,9 @@ cdef class Path:
         self.points = points or []
         self.size = size
 
+    def __add__(self, other: Path):
+        return Path(self.size, self.points + other.points)
+
     cpdef Path reverse(self):
         """Return this path, but backwards"""
         return Path(self.size, self.points[::-1])

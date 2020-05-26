@@ -1,12 +1,17 @@
 import logging
-import typing as tp
 import unittest
+
 logger = logging.getLogger(__name__)
 
 from geom3d import Vector, Box, Line
 
 
 class TestBasic(unittest.TestCase):
+
+    def test_line_intersection(self):
+        a = Line(Vector(0, 10, 0), Vector(10, 0, 0))
+        b = Line(Vector(0, 0, 0), Vector(10, 10, 0))
+        self.assertEqual(a.get_intersection_point(b), Vector(5, 5, 0))
 
     def test_centered_at(self):
         box = Box(Vector(0, 0, 0), Vector(10, 10, 10))
@@ -15,7 +20,7 @@ class TestBasic(unittest.TestCase):
     def test_volume_and_surface_area(self):
         box = Box(Vector(1, 4, 3), Vector(4, 7, 6))
         self.assertEqual(box.get_volume(), 27)
-        self.assertEqual(box.get_surface_area(), 9*6)
+        self.assertEqual(box.get_surface_area(), 9 * 6)
         self.assertEqual(box.get_surface_area_xy(), 9)
 
     def test_collision(self):
