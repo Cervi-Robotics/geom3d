@@ -284,6 +284,16 @@ cdef class Path:
         """
         return Path2D(self.size, self.points)
 
+    def as_segments(self) -> tp.Iterator[Line]:
+        """
+        Convert this path to a bunch of segments
+        """
+        cdef:
+            Vector p1, p2
+
+        for p1, p2 in add_next(self.points, skip_last=True):
+            yield Line(p1, p2)
+
 
 cdef class Path2D(Path):
     """

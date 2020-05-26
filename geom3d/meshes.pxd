@@ -19,3 +19,11 @@ cdef class Triangle:
     cpdef double get_perimeter_length(self)
     cpdef double get_surface_area(self)
     cpdef tuple get_edges(self)  # type: () -> tp.Tuple[Line, Line, Line]
+    cpdef Vector get_normal(self)
+
+cdef class Mesh:
+    cdef:
+        public list triangles
+
+    cpdef double get_surface_area(self)
+    cpdef double get_volume(self)

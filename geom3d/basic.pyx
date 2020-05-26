@@ -26,16 +26,6 @@ cdef class Vector:
     cpdef bint is_zero(self):
         return iszero(self.x) and iszero(self.y) and iszero(self.z)
 
-    cpdef Vector copy(self):
-        """Return a copy of this vector"""
-        return Vector(self.x, self.y, self.z)
-
-    def __copy__(self):
-        return self.copy()
-
-    def __deepcopy__(self, memo={}):
-        return self.copy()
-
     cpdef double distance_to(self, Vector other):
         """
         Syntactic sugar for
@@ -256,7 +246,7 @@ cdef class VectorStartStop:
 
 cdef class Line(VectorStartStop):
     """
-    A line in 3D. It starts somewhere and ends somewhere.
+    A segment in 3D. It starts somewhere and ends somewhere.
 
     This class is immutable and hashable.
 
@@ -355,34 +345,39 @@ cdef class Line(VectorStartStop):
         if include_last_point:
             yield self.stop
 
-    cpdef Vector get_intersection_point(self, Line other):
+    cpdef Line cast_to_xy_plane(self):
         """
-        Get an intersection point of these two lines, or None if there's
-        no intersection
+        Return self but with Z values set to 0.
+        """
+        return Line(self.start.zero_z(), self.stop.zero_z())
+
+    cpdef Vector get_intersection_point(self, Line other):
+        """        
+        :return: a Vector of an intersection point between these two lines, or None else
         """
         cdef:
-            Vector da, db, dc, cp_dc_db, cp_da_db, cp_dc_da
-            double s, t, sq_norm2
+            Vector da, db, dc, cp_da_db
+            double s, t, sq_norm
 
         da = self.stop.sub(self.start)
         db = other.stop.sub(other.start)
         dc = other.start.sub(self.start)
 
-        cp_dc_db = dc.cross_product(db)
-        cp_dc_da = dc.cross_product(da)
         cp_da_db = da.cross_product(db)
 
-        sq_norm2 = cp_da_db.dot_square()
+        sq_norm = get_length(cp_da_db)
 
-        s = cp_dc_db.dot_product(cp_da_db) / sq_norm2
-        t = cp_dc_da.dot_product(cp_da_db) / sq_norm2
+        s = dc.cross_product(db).dot_product(cp_da_db) / sq_norm
+        t = dc.cross_product(da).dot_product(cp_da_db) / sq_norm
 
         if ( 0 <= s <= 1) and (0 <= t <= 1):
             return Vector(self.start.x + da.x * s,
                           self.start.y + da.y * s,
                           self.start.z + da.z * s)
 
+
 ZERO_POINT = Vector(0, 0, 0)
+
 
 cdef class Box(VectorStartStop):
     """

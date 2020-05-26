@@ -18,7 +18,6 @@ cdef class Vector:
     cpdef Vector set_y(self, double y)
     cpdef Vector set_z(self, double z)
     cdef bint eq(self, Vector other)
-    cpdef Vector copy(self)
     cpdef Vector add(self, Vector other)
     cpdef Vector sub(self, Vector other)
     cpdef Vector mul(self, double other)
@@ -78,12 +77,13 @@ cdef class Line(VectorStartStop):
     cpdef PointOnLine get_point_relative(self, double distance_from_start)
     cpdef bint is_colinear(self, Vector vector)
     cpdef Vector get_intersection_point(self, Line other)
+    cpdef Line cast_to_xy_plane(self)
 
 
 cdef class Box(VectorStartStop):
 
     cpdef bint collides_xy(self, Box other)
-    cpdef bint collides(self, Box other)  # type: (Box) -> bool
+    cpdef bint collides(self, Box other)
     cpdef Box translate(self, Vector p)
     cpdef Box relocate_to_zero(self)
     cpdef double get_volume(self)

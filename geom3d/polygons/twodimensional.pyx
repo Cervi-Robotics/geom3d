@@ -14,6 +14,22 @@ cdef class Polygon2D:
     A polygon that disregards the z axis
     """
 
+    def get_intersection_points(self, other: Line) -> tp.Iterator[Vector]:
+        """
+        Return all points of intersection between this polygon's perimeter and a given line.
+
+        This will cast the line onto the XY plane first.
+        """
+        other = other.cast_to_xy_plane()
+        cdef:
+            Vector p
+            Line line
+
+        for line in self.segments:
+            p = other.get_intersection_point(line)
+            if p:
+                yield p
+
     cpdef Polygon2D downscale(self, double step):
         """
         Make a smaller polygon by moving each vertex by step inside the polygon.
