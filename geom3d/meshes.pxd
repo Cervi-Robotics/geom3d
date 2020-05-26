@@ -20,6 +20,8 @@ cdef class Triangle:
     cpdef double get_surface_area(self)
     cpdef tuple get_edges(self)  # type: () -> tp.Tuple[Line, Line, Line]
     cpdef Vector get_normal(self)
+    cpdef double get_signed_area(self)
+
 
 cdef class Mesh:
     cdef:
