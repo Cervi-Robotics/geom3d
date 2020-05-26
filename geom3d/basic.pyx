@@ -108,7 +108,7 @@ cdef class Vector:
         """Return an unit vector having the same heading as current vector"""
         cdef double length = self.get_length()
         if iszero(length):
-            return ZERO_POINT
+            return Vector(0, 0, 0)
         return Vector(self.x / length, self.y / length, self.z / length)
 
     cpdef Vector set_x(self, double x):
@@ -122,11 +122,6 @@ cdef class Vector:
     cpdef Vector set_z(self, double z):
         """Return self, but with z set to a target value"""
         return Vector(self.x, self.y, z)
-
-    @classmethod
-    def zero(cls) -> Vector:
-        """Return a (0, 0, 0) point"""
-        return ZERO_POINT
 
     def __str__(self) -> str:
         return f'<{self.x}, {self.y}, {self.z}>'
@@ -359,9 +354,9 @@ cdef class Line(VectorStartStop):
             Vector da, db, dc, cp_da_db
             double s, t, sq_norm
 
-        da = self.stop.sub(self.start)
-        db = other.stop.sub(other.start)
-        dc = other.start.sub(self.start)
+        da = sub(self.stop, self.start)
+        db = sub(other.stop, other.start)
+        dc = sub(other.start, self.start)
 
         cp_da_db = da.cross_product(db)
 
@@ -374,9 +369,6 @@ cdef class Line(VectorStartStop):
             return Vector(self.start.x + da.x * s,
                           self.start.y + da.y * s,
                           self.start.z + da.z * s)
-
-
-ZERO_POINT = Vector(0, 0, 0)
 
 
 cdef class Box(VectorStartStop):
