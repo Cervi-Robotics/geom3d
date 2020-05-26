@@ -32,7 +32,7 @@ cdef class Vector:
         
         >>> self.sub(other).get_length()
         """
-        return self.sub(other).get_length()
+        return get_length(sub(self, other))
 
     cpdef Vector cross_product(self, Vector other):
         """Calculate the cross product between this vector and the other"""
@@ -365,7 +365,7 @@ cdef class Line(VectorStartStop):
 
         cp_da_db = da.cross_product(db)
 
-        sq_norm = get_length(cp_da_db)
+        sq_norm = cp_da_db.dot_square()
 
         s = dc.cross_product(db).dot_product(cp_da_db) / sq_norm
         t = dc.cross_product(da).dot_product(cp_da_db) / sq_norm
