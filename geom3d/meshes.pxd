@@ -29,3 +29,4 @@ cdef class Mesh:
 
     cpdef double get_surface_area(self)
     cpdef double get_volume(self)
+    cpdef bint collides(self, Ray ray)

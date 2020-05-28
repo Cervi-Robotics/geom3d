@@ -108,11 +108,13 @@ cdef class Mesh:
     def __init__(self, triangles: tp.List[Triangle]):
         self.triangles = triangles
 
-    def get_intersection_points(self, ray: Ray) -> tp.Iterator[Vector]:
-        """
-        Get all intersection points between this mesh and a given ray
-        """
-
+    cpdef bint collides(self, Ray ray):
+        """Does this mesh collide with the ray?"""
+        cdef Triangle triangle
+        for triangle in self.triangles:
+            if ray.collides(triangle):
+                return True
+        return False
 
     cpdef double get_surface_area(self):
         cdef:

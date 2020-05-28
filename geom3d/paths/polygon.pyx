@@ -18,9 +18,10 @@ cpdef Path cover_polygon2d_with_path(Polygon2D polygon, Vector box, double step_
     :param start_at: fraction (0 <= x < 0) of total polygon's perimeter length to start the path at
     :return: path that covers the entire polygon
     """
-    cdef double offset = polygon.total_perimeter_length * start_at
-    cdef object path = Path(box, [polygon.get_point_on_polygon(offset).to_vector()])
-    cdef Vector point
+    cdef:
+        double offset = polygon.total_perimeter_length * start_at
+        Path path = Path(box, [polygon.get_point_on_polygon(offset).to_vector()])
+        Vector point
 
     while True:
         for point in polygon.iter_from(start_at * polygon.total_perimeter_length):
