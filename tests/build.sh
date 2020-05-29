@@ -23,7 +23,7 @@ else
   done
 
   # Bundle external shared libraries into the wheels
-  for whl in wheelhouse/*.whl; do
+  for whl in wheelhouse/*linux*.whl; do
       auditwheel repair "$whl" --plat $PLAT -w /io/wheelhouse/
   done
 fi
