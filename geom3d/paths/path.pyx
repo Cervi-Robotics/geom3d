@@ -34,16 +34,6 @@ cdef class Path:
         cdef list points = [point.add(Vector(0, 0, delta)) for point in self.points]
         return Path(self.size, points)
 
-    cpdef Path set_z(self, double z):
-        """
-        Change the z of every vector to that provided.
-
-        :param z: new z to set for every vector
-
-        :return: new Path
-        """
-        return Path(self.size, [p.set_z(z) for p in self.points])
-
     cpdef Path copy(self):
         return Path(self.size, copy(self.points))
 
