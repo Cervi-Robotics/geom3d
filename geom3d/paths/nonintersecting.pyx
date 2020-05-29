@@ -5,7 +5,7 @@ from satella.coding.sequences import half_cartesian, even, odd
 from satella.coding.structures import HashableWrapper
 
 from ..basic cimport Vector
-from .path cimport Path2D
+
 
 
 logger = logging.getLogger(__name__)
