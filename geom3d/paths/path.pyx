@@ -278,12 +278,6 @@ cdef class Path:
             count += 1
         return sum_e / count
 
-    cpdef Path2D to_path2D(self):
-        """
-        Return this path as a Path2D
-        """
-        return Path2D(self.size, self.points)
-
     def as_segments(self) -> tp.Iterator[Line]:
         """
         Convert this path to a bunch of segments
