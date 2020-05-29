@@ -23,7 +23,6 @@ cdef class Path:
     cpdef void insert_at(self, Vector vector, double length)
     cpdef bint does_collide(self, Path other)
     cpdef Path translate_z(self, double delta)
-    cpdef Path2D to_path2D(self)
     cpdef void set_z(self, double new_z)
 
 
