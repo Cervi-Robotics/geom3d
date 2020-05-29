@@ -92,6 +92,16 @@ cdef class Vector:
         """
         return Vector(self.x, 0, self.z)
 
+    cpdef Vector scale_by(self, double factor_x=1, double factor_y=1, double factor_z=1):
+        """
+        Return this vector by multiplying its coordinates by respective values.
+        
+        :param factor_x: value to multiply x by 
+        :param factor_y: value to multiply y by
+        :param factor_z: value to multiply z by
+        """
+        return Vector(self.x*factor_x, self.y*factor_y, self.z*factor_z)
+
     cpdef Vector zero_x(self):
         """
         Syntactic sugar for
@@ -178,6 +188,13 @@ cdef class Vector:
 
     cdef double get_length(self):
         return get_length(self)
+
+    # Copying immmutable objects
+    def __copy__(self):
+        return self
+    
+    def __deepcopy__(self, memo):
+        return self
 
       
 cdef class PointOnLine:

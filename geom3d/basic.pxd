@@ -11,6 +11,7 @@ cdef class Vector:
     cpdef double dot_square(self)
     cpdef Vector update(self, object x= *, object y= *, object z= *)
     cpdef Vector unitize(self)
+    cpdef Vector scale_by(self, double factor_x=* , double factor_y= *, double factor_z= *)
     cpdef Vector zero_x(self)
     cpdef Vector zero_y(self)
     cpdef Vector zero_z(self)

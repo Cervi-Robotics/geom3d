@@ -24,14 +24,6 @@ cdef class Path:
     cpdef bint does_collide(self, Path other)
     cpdef Path translate_z(self, double delta)
     cpdef Path2D to_path2D(self)
+    cpdef void set_z(self, double new_z)
 
-
-cdef class Path2D(Path):
-    cpdef Path2D reverse(self)
-    cpdef list get_intersecting_boxes_indices(self, Path other)
-    cpdef bint does_collide(self, Path other)
-    cpdef Path2D set_z(self, double z)
-    cpdef Path2D copy(self)
-    cpdef Path2D simplify(self)
-    cpdef Path to_path(self)
 
