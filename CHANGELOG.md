@@ -2,6 +2,7 @@
 
 * added `Triangle`, `Ray`, `Path.set_z`
 * software will not be tested on _Python-nighly_ now
+* removed `Path2D`
 
 # v0.5
 
