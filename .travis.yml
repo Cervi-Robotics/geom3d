@@ -21,10 +21,6 @@ jobs:
       python: "3.8"
       script:
         - bash tests/test.sh
-    - stage: test
-      python: "nightly"
-      script:
-        - bash tests/test.sh
     - stage: deploy
       services:
         - docker

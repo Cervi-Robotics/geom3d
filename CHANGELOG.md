@@ -1,3 +1,8 @@
+# v0.6
+
+* added `Triangle`, `Ray`, `Path.set_z`
+* software will not be tested on _Python-nighly_ now
+
 # v0.5
 
 * added `make_nonintersecting`
