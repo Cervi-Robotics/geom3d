@@ -1,3 +1,7 @@
+# v0.7
+
+* _TBA_
+
 # v0.6
 
 * added `Triangle`, `Ray`, `Path.set_z`
