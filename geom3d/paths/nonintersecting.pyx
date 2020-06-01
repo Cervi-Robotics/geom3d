@@ -102,7 +102,7 @@ cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersecti
     cdef bint a_higher, b_higher
 
     if are_mutually_nonintersecting(paths):
-        return paths
+        return [path.path for path in paths]
 
     cdef MakeNonintersectingPaths elem1, elem2
 

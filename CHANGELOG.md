@@ -2,6 +2,8 @@
 
 * fixed a bug in `XYPointCollection`
   * additionally added unit tests to prevent regressions
+* bugfix in `make_nonintersecting` - `MakeNonintersecting` object
+  would be returned if paths were nonintersecting from the start
 
 # v0.6
 
