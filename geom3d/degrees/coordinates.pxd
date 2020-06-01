@@ -17,7 +17,7 @@ cdef class XYPoint:
 
     cpdef Vector to_vector(self)
 
-    cpdef double distance(self, object other)
+    cpdef double distance(self, object other)       # to be returned in meters
     cpdef XYPoint add(self, object other)
     cpdef XYPoint sub(self, object other)
 

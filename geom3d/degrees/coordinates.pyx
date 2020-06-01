@@ -20,6 +20,11 @@ cdef inline double avg(list x):
 
 cdef class XYPoint:
     def __init__(self, avg_lat: tp.Optional[float], x: float, y: float):
+        """
+        :param avg_lat: average latitude at zone considered
+        :param x: distance from the 0th meridian, in meters
+        :param y: distance from the 0th circle of latitude
+        """
         if avg_lat is None:
             self.is_avg_lat_set = False
         else:
