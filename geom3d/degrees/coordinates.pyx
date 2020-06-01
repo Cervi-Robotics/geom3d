@@ -109,7 +109,7 @@ cdef class Coordinates:
         return hash(self.lat) ^ hash(self.lon)
 
 
-class XYPointCollection(collections.abc.Sequence):
+cdef class XYPointCollection:
     """
     A tool to convert a set of coordinates to (x,y) grid.
 
@@ -120,14 +120,6 @@ class XYPointCollection(collections.abc.Sequence):
     :attr:`geom3d.degrees.XYPointCollection.maximum_absolute_error`
     """
 
-    avg_lat: float
-    planet: Planet
-    maximum_latitudinal_error_per_degree: float  # in metres per degree
-    maximum_absolute_error: float  # in metres
-    points: tp.List[XYPoint]
-    lon_to_x: float
-    lat_to_y: float
-
     def __init__(self, coords: tp.List[Coordinates], planet: Planet = Earth()):
         if not coords:
             raise ValueError('Specify at least a single coordinate')
@@ -137,7 +129,7 @@ class XYPointCollection(collections.abc.Sequence):
         self.lon_to_x = lon_tot_len / 360
         self.lat_to_y = planet.circumference_at_pole / 360
         self.points = [XYPoint(self.avg_lat, self.lon_to_x * coord.lon,
-                               self.lat_to_y * coord.lat, self) for coord in coords]
+                               self.lat_to_y * coord.lat) for coord in coords]
 
         # Calculate maximum error
         cdef double pes_lat = max((coord.lat for coord in coords), key=lambda x: abs(x - self.avg_lat))

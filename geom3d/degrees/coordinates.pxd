@@ -26,3 +26,14 @@ cdef class Coordinates:
     cdef:
         readonly double lat
         readonly double lon
+
+
+cdef class XYPointCollection:
+    cdef:
+        public double avg_lat
+        public Planet planet
+        public double maximum_latitudinal_error_per_degree
+        public double maximum_absolute_error    # in metres
+        public list points      # type: tp.List[XYPoint]
+        public double lon_to_x
+        public double lat_to_y
