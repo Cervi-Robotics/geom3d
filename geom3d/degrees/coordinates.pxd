@@ -37,3 +37,5 @@ cdef class XYPointCollection:
         public list points      # type: tp.List[XYPoint]
         public double lon_to_x
         public double lat_to_y
+
+    cpdef XYPoint translate(self, Coordinates x)

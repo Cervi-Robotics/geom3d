@@ -139,7 +139,7 @@ cdef class XYPointCollection:
         cdef double diff = fabs(pes_lat - self.avg_lat)
         self.maximum_absolute_error = fabs(diff) * self.maximum_latitudinal_error_per_degree
 
-    def translate(self, x: Coordinates) -> XYPoint:
+    cpdef XYPoint translate(self, Coordinates x):
         """
         Translate given coordinates using the provided reference frame.
 
