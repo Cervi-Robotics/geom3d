@@ -1,6 +1,7 @@
 # v0.7
 
-* _TBA_
+* fixed a bug in `XYPointCollection`
+  * additionally added unit tests to prevent regressions
 
 # v0.6
 

@@ -132,7 +132,7 @@ class XYPointCollection(collections.abc.Sequence):
         if not coords:
             raise ValueError('Specify at least a single coordinate')
         self.planet = planet
-        self.avg_lat = avg(coord.lat for coord in coords)
+        self.avg_lat = avg([coord.lat for coord in coords])
         cdef double lon_tot_len = planet.get_circumference_at_latitude(self.avg_lat)
         self.lon_to_x = lon_tot_len / 360
         self.lat_to_y = planet.circumference_at_pole / 360
@@ -163,6 +163,9 @@ class XYPointCollection(collections.abc.Sequence):
 
     def __len__(self) -> int:
         return len(self.points)
+
+    def __iter__(self):
+        return iter(self.points)
 
     def to_coordinates(self, v: tp.Union[XYPoint, Vector]) -> Coordinates:
         """
