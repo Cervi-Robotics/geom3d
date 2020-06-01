@@ -492,7 +492,7 @@ cdef class Box(VectorStartStop):
         """Returns the center of this box"""
         return self.get_center()
 
-    cdef Vector get_center(self):
+    cpdef Vector get_center(self):
         """
         Return a vector that appears directly in the center of that box
         """

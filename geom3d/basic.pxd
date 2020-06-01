@@ -90,7 +90,7 @@ cdef class Box(VectorStartStop):
     cpdef double get_volume(self)
     cpdef double get_surface_area_xy(self)
     cpdef double get_surface_area(self)
-    cdef Vector get_center(self)
+    cpdef Vector get_center(self)
     cpdef Box center_at(self, Vector p)
     cdef Vector get_size(self)
     cpdef Line get_diagonal(self)

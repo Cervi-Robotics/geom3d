@@ -49,7 +49,7 @@ cdef class XYPoint:
 
     @classmethod
     def from_vector(cls, x: Vector) -> XYPoint:
-        return XYPoint(x=x.x, y=x.y)
+        return XYPoint(None, x.x, x.y)
 
     cpdef Vector to_vector(self):
         """Convert self into a vector. The z axis will be set to zero."""
