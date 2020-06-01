@@ -27,6 +27,8 @@ cdef class Coordinates:
         readonly double lat
         readonly double lon
 
+    cpdef XYPoint to_xy_point(self, Planet planet= *)
+
 
 cdef class XYPointCollection:
     cdef:

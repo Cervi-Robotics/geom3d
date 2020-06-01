@@ -93,7 +93,7 @@ cdef class Coordinates:
         self.lat = lat
         self.lon = lon
 
-    def to_xy_point(self, planet: Planet = Earth()) -> XYPoint:
+    cpdef XYPoint to_xy_point(self, Planet planet = Earth()):
         """
         This will not have any error.
 
