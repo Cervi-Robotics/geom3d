@@ -91,6 +91,7 @@ cdef bint are_mutually_nonintersecting(list paths):  # type: (tp.List[MakeNonint
             continue
         if path1.path.does_collide(path2.path):
             return False
+    idle()
     return True
 
 
@@ -120,6 +121,7 @@ cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersecti
 
     while not are_mutually_nonintersecting(paths):
         for elem1, elem2 in half_cartesian(paths, include_same_pairs=False):
+            idle()
             if elem1 == elem2:
                 continue
             a_higher = elem1 not in paths_lower
