@@ -4,6 +4,7 @@
   * additionally added unit tests to prevent regressions
 * bugfix in `make_nonintersecting` - `MakeNonintersecting` object
   would be returned if paths were nonintersecting from the start
+* release the GIL during `make_nonintersecting`
 
 # v0.6
 

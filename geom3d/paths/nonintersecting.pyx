@@ -106,26 +106,27 @@ cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersecti
 
     cdef MakeNonintersectingPaths elem1, elem2
 
-    while not are_mutually_nonintersecting(paths):
-        for elem1, elem2 in half_cartesian(paths, include_same_pairs=False):
-            if elem1 == elem2:
-                continue
-            a_higher = elem1 not in paths_lower
-            b_higher = elem2 not in paths_lower
+    with nogil:
+        while not are_mutually_nonintersecting(paths):
+            for elem1, elem2 in half_cartesian(paths, include_same_pairs=False):
+                if elem1 == elem2:
+                    continue
+                a_higher = elem1 not in paths_lower
+                b_higher = elem2 not in paths_lower
 
-            try:
-                if a_higher == b_higher:
-                    make_mutually_nonintersecting(elem1, elem2, False)
-                elif a_higher:
-                    make_pair_nonintersecting(elem1, elem2, 1.0)
-                else:
-                    make_pair_nonintersecting(elem2, elem1, 1.0)
-            except ValueError:
-                if a_higher == b_higher:
-                    make_mutually_nonintersecting(elem1, elem2, True)
-                elif a_higher:
-                    make_pair_nonintersecting(elem2, elem1, 1.0)
-                else:
-                    make_pair_nonintersecting(elem1, elem2, 1.0)
+                try:
+                    if a_higher == b_higher:
+                        make_mutually_nonintersecting(elem1, elem2, False)
+                    elif a_higher:
+                        make_pair_nonintersecting(elem1, elem2, 1.0)
+                    else:
+                        make_pair_nonintersecting(elem2, elem1, 1.0)
+                except ValueError:
+                    if a_higher == b_higher:
+                        make_mutually_nonintersecting(elem1, elem2, True)
+                    elif a_higher:
+                        make_pair_nonintersecting(elem2, elem1, 1.0)
+                    else:
+                        make_pair_nonintersecting(elem1, elem2, 1.0)
 
     return [path.path for path in paths]
