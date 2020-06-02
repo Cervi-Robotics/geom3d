@@ -4,7 +4,7 @@
   * additionally added unit tests to prevent regressions
 * bugfix in `make_nonintersecting` - `MakeNonintersecting` object
   would be returned if paths were nonintersecting from the start
-* release the GIL during `make_nonintersecting`
+* call to gevent idle during long-running operations
 
 # v0.6
 
