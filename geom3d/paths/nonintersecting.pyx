@@ -51,6 +51,7 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
     cdef Vector to_lower = Vector(0, 0, -step)
 
     while True:
+        idle()
         indices_to_pull_lower, indices_to_pull_higher = set(), set()
         get_mutual_intersecting(lower.path, higher.path, indices_to_pull_lower, indices_to_pull_higher)
 
@@ -84,9 +85,8 @@ cdef int make_mutually_nonintersecting(MakeNonintersectingPaths a,
 
 cdef bint are_mutually_nonintersecting(list paths):  # type: (tp.List[MakeNonintersectingPaths])
     cdef MakeNonintersectingPaths path1, path2
-    for path1, path2 in half_cartesian(paths):
-        if path1.path is path2.path:
-            continue
+    for path1, path2 in half_cartesian(paths, include_same_pairs=False):
+        idle()
         if path1.path.does_collide(path2.path):
             return False
     return True
