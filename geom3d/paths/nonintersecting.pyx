@@ -5,6 +5,7 @@ from satella.coding.sequences import half_cartesian, even, odd
 from satella.coding.structures import HashableWrapper
 
 from ..basic cimport Vector
+from .path cimport get_mutual_intersecting
 
 try:
     from gevent import idle
@@ -40,7 +41,7 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
     :param step: a step in Z-axis by which to lower the paths
     :raises ValueError: unable to resolve the path such
     """
-    cdef list indices_to_pull_lower, indices_to_pull_higher
+    cdef set indices_to_pull_lower, indices_to_pull_higher
     cdef int i
 
     cdef list lower_points_backup = lower.path.points.copy()
@@ -49,9 +50,13 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
     cdef Vector to_higher = Vector(0, 0, +step)
     cdef Vector to_lower = Vector(0, 0, -step)
 
-    while lower.path.does_collide(higher.path):
-        indices_to_pull_lower = lower.path.get_intersecting_boxes_indices(higher.path)
-        indices_to_pull_higher = higher.path.get_intersecting_boxes_indices(lower.path)
+    while True:
+        indices_to_pull_lower, indices_to_pull_higher = set(), set()
+        get_mutual_intersecting(lower.path, higher.path, indices_to_pull_lower, indices_to_pull_higher)
+
+        if not indices_to_pull_lower:
+            # it's sufficient to check only one set
+            break
 
         for i in indices_to_pull_lower:
             lower.path[i] = lower.path[i].add(to_lower)

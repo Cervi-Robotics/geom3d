@@ -25,3 +25,4 @@ cdef class Path:
     cpdef void set_z(self, double new_z)
 
 
+cpdef void get_mutual_intersecting(Path path1, Path path2, set to_path1, set to_path2)

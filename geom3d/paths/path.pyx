@@ -283,3 +283,13 @@ cdef class Path:
         Set all Z positions in this path to a provided one
         """
         self.points = [point.set_z(new_z) for point in self.points]
+
+
+cpdef void get_mutual_intersecting(Path path1, Path path2, set to_path1, set to_path2):
+    cdef Box box1, box2
+    cdef int i, j
+    for i, box1 in enumerate(path1):
+        for j, box2 in enumerate(path2):
+            if box1.collides(box2):
+                to_path1.add(i)
+                to_path2.add(j)
