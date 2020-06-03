@@ -1,3 +1,7 @@
+# v0.8
+
+* _TBA_
+
 # v0.7
 
 * fixed a bug in `XYPointCollection`
