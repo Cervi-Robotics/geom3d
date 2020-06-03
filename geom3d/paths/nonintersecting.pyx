@@ -2,7 +2,7 @@ import logging
 
 from satella.coding.sequences import half_cartesian, even
 from .path cimport get_mutual_intersecting, get_still_mutual_intersecting
-
+from ..base cimport isclose
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,14 @@ cdef class MakeNonintersectingPaths:
 
     cpdef double get_ceiling_down(self):
         return self.path.avg_z() - self.minimum_flight
+
+    cdef bint eq(self, MakeNonintersectingPaths other):
+        return isclose(self.minimum_flight, other.minimum_flight) and \
+               isclose(self.maximum_flight, other.maximum_flight) and \
+               self.path.eq(other.path)
+
+    def __eq__(self, other: MakeNonintersectingPaths):
+        return self.eq(other)
 
 
 cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,

@@ -8,6 +8,7 @@
 * more elements are now hashable
 * improved downscaling of polygons
 * added `are_mutually_nonintersecting`
+* made `Coordinates` and `XYPoint` eq-able and hashable
 
 # v0.6
 

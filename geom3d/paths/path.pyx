@@ -71,14 +71,17 @@ cdef class Path:
         """
         Return this path, but with points that are colinear to adjacent points removed
         """
-        cdef Line line
-        cdef list indices_to_remove = []
+        cdef:
+            Line line
+            list indices_to_remove = []
+            set indices_to_remove_set
+            list points
         for prev, mid, next_vector, index in zip(self.points, self.points[1:], self.points[2:], count(self.points, 1)):
             line = Line(prev, next_vector)
             if line.is_colinear(mid):
                 indices_to_remove.append(index)
-        cdef set indices_to_remove_set = set(indices_to_remove)
-        cdef list points = [point for i, point in enumerate(self.points) if i not in indices_to_remove_set]
+        indices_to_remove_set = set(indices_to_remove)
+        points = [point for i, point in enumerate(self.points) if i not in indices_to_remove_set]
         return Path(self.size, points)
 
     cpdef int advance(self, delta: Vector) except -1:
@@ -126,10 +129,11 @@ cdef class Path:
         If the length given is longer than the path, the vector will be extrapolated
         from two last points and an UserWarning will be given
         """
-        cdef double len_current = 0
-        cdef double len_between
-        cdef Vector prev_point, next_point
-        cdef Line line
+        cdef:
+            double len_current = 0
+            double len_between
+            Vector prev_point, next_point
+            Line line
 
         for prev_point, next_point in add_next(self.points, skip_last=True):
             len_between = prev_point.distance_to(next_point)
@@ -153,11 +157,13 @@ cdef class Path:
         :param vector: vector to insert 
         :param length: length from the start
         """
-        cdef double len_current = 0
-        cdef Vector prev_point = self.points[0]
-        cdef Vector next_point
-        cdef int i  # index to insert before
-        cdef double dist_length
+        cdef:
+            double len_current = 0
+            Vector prev_point = self.points[0]
+            Vector next_point
+            int i  # index to insert before
+            double dist_length
+
         if iszero(length):
             self.points[0] = vector
             return
@@ -193,8 +199,10 @@ cdef class Path:
             yield Box.centered_with_size(point, self.size)
 
     cpdef int append(self, object elem) except -1:  # type: (tp.Union[Vector, Box]) -> None
-        cdef Box box
-        cdef Vector center, vector
+        cdef:
+            Box box
+            Vector center, vector
+
         if isinstance(elem, Box):
             box = elem
             if self.size is None:
@@ -223,8 +231,9 @@ cdef class Path:
         """
         Return all boxes that intersect with any other box in other's path
         """
-        cdef Path path = other
-        cdef Box elem1, elem2
+        cdef:
+            Path path = other
+            Box elem1, elem2
 
         for elem1, elem2 in itertools.product(self, other):
             if elem1.collides(elem2):
@@ -241,11 +250,13 @@ cdef class Path:
         """
         Return all indices of boxes that intersect with any other box in other's path
         """
-        cdef Path path = other
-        cdef Box elem1, elem2
-        cdef tuple row
-        cdef int i
-        cdef set indices = set()
+        cdef:
+            Path path = other
+            Box elem1, elem2
+            tuple row
+            int i
+            set indices = set()
+
         for row, elem2 in itertools.product(enumerate(self), other):
             i, elem1 = row
             if elem1.collides(elem2):
@@ -254,8 +265,10 @@ cdef class Path:
 
     cpdef double get_length(self):
         """Calculate and return the total length of this path"""
-        cdef double length = 0
-        cdef Vector prev_p, next_p
+        cdef:
+            double length = 0
+            Vector prev_p, next_p
+
         for prev_p, next_p in add_next(self.points):
             if next_p is None:
                 return length
@@ -263,9 +276,11 @@ cdef class Path:
 
     cpdef double avg_z(self):
         """Return arithmetic mean of all z-values of constituent points"""
-        cdef double sum_e
-        cdef int count
-        cdef Vector vector
+        cdef:
+            double sum_e
+            int count
+            Vector vector
+
         for vector in self.points:
             sum_e += vector.z
             count += 1
@@ -287,10 +302,18 @@ cdef class Path:
         """
         self.points = [point.set_z(new_z) for point in self.points]
 
+    cdef bint eq(self, Path other):
+        return self.size.eq(other.size) and self.points == other.points
+
+    def __eq__(self, other: Path):
+        return self.eq(other)
+
 
 cpdef void get_mutual_intersecting(Path path1, Path path2, set to_path1, set to_path2):
-    cdef Box box1, box2
-    cdef int i, j
+    cdef:
+        Box box1, box2
+        int i, j
+
     for i, box1 in enumerate(path1):
         for j, box2 in enumerate(path2):
             if box1.collides(box2):
@@ -301,8 +324,10 @@ cpdef void get_still_mutual_intersecting(Path path1, Path path2, set to_path1, s
     """
     Analyze a subset of points previously proved to be collisible
     """
-    cdef Box box1, box2
-    cdef int i, j
+    cdef:
+        Box box1, box2
+        int i, j
+
     for i in ind_path1:
         for j in ind_path2:
             if path1.get_box_at(i).collides(path2.get_box_at(j)):

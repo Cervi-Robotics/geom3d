@@ -10,6 +10,7 @@ cdef class MakeNonintersectingPaths:
 
     cpdef double get_ceiling_up(self)
     cpdef double get_ceiling_down(self)
+    cdef bint eq(self, MakeNonintersectingPaths other)
 
 
 cpdef list make_nonintersecting(list paths)  # type: (tp.List[tp.Tuple[int, int, Path]]) -> tp.List[Path]

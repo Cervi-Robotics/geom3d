@@ -21,6 +21,9 @@ cdef class XYPoint:
     cpdef XYPoint add(self, object other)
     cpdef XYPoint sub(self, object other)
 
+    cdef int hash(self)
+    cdef bint eq(self, XYPoint other)
+
 
 cdef class Coordinates:
     cdef:
@@ -28,6 +31,8 @@ cdef class Coordinates:
         readonly double lon
 
     cpdef XYPoint to_xy_point(self, Planet planet= *)
+    cdef bint eq(self, Coordinates other)
+    cdef int hash(self)
 
 
 cdef class XYPointCollection:

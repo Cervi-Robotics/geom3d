@@ -111,6 +111,7 @@ cdef class Mesh:
     cpdef bint collides(self, Ray ray):
         """Does this mesh collide with the ray?"""
         cdef Triangle triangle
+
         for triangle in self.triangles:
             if ray.collides(triangle):
                 return True

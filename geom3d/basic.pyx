@@ -326,7 +326,8 @@ cdef class Line(VectorStartStop):
     def __contains__(self, vec: Vector) -> bool:
         """Does this line contain given vector?"""
 
-        cdef double min_x, max_x
+        cdef double min_x, max_x, min_y, max_y, min_z, max_z
+
         if self.start.x > self.stop.x:
             max_x = self.start.x
             min_x = self.stop.x
@@ -334,7 +335,6 @@ cdef class Line(VectorStartStop):
             max_x = self.stop.x
             min_x = self.start.x
 
-        cdef double min_y, max_y
         if self.start.y > self.stop.y:
             max_y = self.start.y
             min_y = self.stop.y
@@ -342,7 +342,6 @@ cdef class Line(VectorStartStop):
             max_y = self.stop.y
             min_y = self.start.y
 
-        cdef double min_z, max_z
         if self.start.z > self.stop.z:
             max_z = self.start.z
             min_z = self.stop.z
@@ -391,10 +390,12 @@ cdef class Line(VectorStartStop):
         :param include_last_point: whether to include last point. Distance from the almost last to
             last might not be equal to step
         """
-        self_length = self.length
-        current_distance = 0.0
+        cdef:
+            double self_length = self.length
+            double current_distance = 0.0
+
         while current_distance <= self_length:
-            yield self.start.add(self.unit_vector.mul(current_distance))
+            yield add(self.start, mul(self.unit_vector, current_distance))
             current_distance += step
 
         if include_last_point:
@@ -523,11 +524,12 @@ cdef class Box(VectorStartStop):
         :param center: center point
         :param size: _size of the box
         """
+        cdef Vector start, stop
         assert size.x >= 0
         assert size.y >= 0
         assert size.z >= 0
-        start = center - size / 2
-        stop = center + size / 2
+        start = sub(center, truediv(size, 2))
+        stop = add(center, truediv(size, 2))
         return Box(start, stop)
 
     @property
@@ -577,9 +579,10 @@ cdef class Box(VectorStartStop):
         """
         # sorting in the beginning asserts that the difference is positive
 
-        cdef double line_a = self.stop.x - self.start.x
-        cdef double line_b = self.stop.y - self.start.y
-        cdef double line_c = self.stop.z - self.start.z
+        cdef:
+            double line_a = self.stop.x - self.start.x
+            double line_b = self.stop.y - self.start.y
+            double line_c = self.stop.z - self.start.z
 
         return (line_a*line_b + line_b*line_c + line_c*line_a) * 2
 

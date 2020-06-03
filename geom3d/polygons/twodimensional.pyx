@@ -37,9 +37,11 @@ cdef class Polygon2D:
         :param step: distance to which move each vertex
         :raises ValueError: polygon cannot be shrunk further
         """
-        cdef PointOnPolygon2D point = self.get_point_on_polygon(0.0)
-        cdef list points = []
-        cdef Vector candidate_point
+        cdef:
+            PointOnPolygon2D point = self.get_point_on_polygon(0.0)
+            list points = []
+            Vector candidate_point
+
         for vector, segment_length in zip(shift(self.points, 1), self.len_segments):
             # so that point occurs on the end of n-th segment
             point.advance(segment_length)
@@ -57,8 +59,10 @@ cdef class Polygon2D:
         
         First point is zero.
         """
-        cdef double tot_length = 0
-        cdef double seg_length
+        cdef:
+            double tot_length = 0
+            double seg_length
+
         for seg_length in self.len_segments:
             yield tot_length
             tot_length += seg_length
@@ -91,8 +95,10 @@ cdef class Polygon2D:
         :param offset: the distance to travel to get the polygon's segment. If this appears directly
             on a vertex, the segment which starts at this vertex will be returned.
         """
-        cdef double length_travelled = 0.0
-        cdef Line segment
+        cdef:
+            double length_travelled = 0.0
+            Line segment
+
         for segment in itertools.cycle(self.iter_segments()):
             length_travelled += segment.length
             if offset <= length_travelled:
@@ -109,9 +115,10 @@ cdef class Polygon2D:
 
     cpdef double get_signed_area(self):
         """Area of this polygon as calculated by the shoelace formula"""
-        cdef double sum_ = 0
-        cdef Vector p0
-        cdef Vector p1
+        cdef:
+            double sum_ = 0
+            Vector p0, p1
+
         for p0, p1 in add_next(self.points, wrap_over=True):
             sum_ += p0.x * p1.y - p1.x * p0.y
         return sum_ * 0.5
@@ -211,17 +218,18 @@ cdef class Polygon2D:
         :param vec: Vector to which returned point on the perimeter of the polygon has to be the closest
         :param iterations: the iterations. The greater the number the slower it runs, but the better the result is
         """
-        cdef int i
-        cdef Line seg
-        cdef list sum_of_distances = [(seg.start.distance_to(vec) + seg.stop.distance_to(vec), i) for i, seg in
+        cdef:
+            int i, j
+            Line seg
+            list sum_of_distances = [(seg.start.distance_to(vec) + seg.stop.distance_to(vec), i) for i, seg in
                                       enumerate(self.iter_segments())]
-        cdef int index = min(sum_of_distances)[1]
-        cdef Line segment = self.segments[index]
-        cdef double cur_ran_start = 0
-        cdef double cur_ran_stop = segment.length
-        cdef PointOnLine pol1, pol2
-        cdef double cur_ran_half
-        cdef int j
+            int index = min(sum_of_distances)[1]
+            Line segment = self.segments[index]
+            double cur_ran_start = 0
+            double cur_ran_stop = segment.length
+            PointOnLine pol1, pol2
+            double cur_ran_half
+
         for j in range(iterations):
             cur_ran_half = (cur_ran_start + cur_ran_stop) / 2
             pol1 = segment.get_point((cur_ran_start + cur_ran_half) / 2)
@@ -268,8 +276,10 @@ cdef class Polygon2D:
         :param include_last_point: whether to include last point. Distance from the almost last to
             last might not be equal to step
         """
-        cdef double distance_travelled = 0.0
-        cdef PointOnPolygon2D pop = self.get_point_on_polygon(0.0)
+        cdef:
+            double distance_travelled = 0.0
+            PointOnPolygon2D pop = self.get_point_on_polygon(0.0)
+
         while distance_travelled < self.total_perimeter_length:
             yield pop.to_vector()
             pop.advance(step)

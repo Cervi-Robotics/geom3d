@@ -2,6 +2,7 @@ import collections.abc
 import typing as tp
 
 from geom3d.basic cimport Vector
+from geom3d.base cimport isclose
 from libc.math cimport cos, M_PI, sqrt, fabs
 
 from .planets import Earth, Planet
@@ -34,7 +35,7 @@ cdef class XYPoint:
         self.y = y
 
     cpdef Coordinates to_coordinates(self, Planet planet = Earth(), avg_lat=None):
-        cdef double real_avg_lat
+        cdef double lon_tot_len, x_to_lon, y_to_lat, real_avg_lat
         if avg_lat is None:
             if not self.is_avg_lat_set:
                 raise ValueError('You must specify average latitude!')
@@ -42,9 +43,9 @@ cdef class XYPoint:
         else:
             real_avg_lat = avg_lat
 
-        cdef double lon_tot_len = 2 * M_PI * planet.radius_at_equator * cos(to_radians(real_avg_lat))
-        cdef double x_to_lon = 360 / lon_tot_len
-        cdef double y_to_lat = 360 / planet.circumference_at_pole
+        lon_tot_len = 2 * M_PI * planet.radius_at_equator * cos(to_radians(real_avg_lat))
+        x_to_lon = 360 / lon_tot_len
+        y_to_lat = 360 / planet.circumference_at_pole
         return Coordinates(self.x * x_to_lon, self.y * y_to_lat)
 
     @classmethod
@@ -87,6 +88,18 @@ cdef class XYPoint:
         self.y -= other.y
         return self
 
+    cdef bint eq(self, XYPoint other):
+        return isclose(self.x, other.x) and isclose(self.y, other.y)
+
+    def __eq__(self, other: XYPoint):
+        return self.eq(other)
+
+    cdef int hash(self):
+        return hash(self.x) ^ hash(self.y)
+
+    def __hash__(self) -> int:
+        return self.hash()
+
 
 cdef class Coordinates:
     """
@@ -108,9 +121,15 @@ cdef class Coordinates:
         return XYPointCollection([self], planet)[0]
 
     def __eq__(self, other: Coordinates) -> bool:
-        return self.lat == other.lat and self.lon == other.lon
+        return self.eq(other)
+
+    cdef bint eq(self, Coordinates other):
+        return isclose(self.lat, other.lat) and isclose(self.lon, other.lon)
 
     def __hash__(self) -> int:
+        return self.hash()
+
+    cdef int hash(self):
         return hash(self.lat) ^ hash(self.lon)
 
 
@@ -123,6 +142,8 @@ cdef class XYPointCollection:
     This will introduce an error at the x coordinate, amount of which can be calculated from
     :attr:`geom3d.degrees.XYPointCollection.maximum_latitudinal_error_per_degree` and
     :attr:`geom3d.degrees.XYPointCollection.maximum_absolute_error`
+
+    :raises ValueError: at least one coordinate must be specified
     """
 
     def __init__(self, coords: tp.List[Coordinates], planet: Planet = Earth()):
@@ -137,11 +158,12 @@ cdef class XYPointCollection:
                                self.lat_to_y * coord.lat) for coord in coords]
 
         # Calculate maximum error
-        cdef double pes_lat = max((coord.lat for coord in coords), key=lambda x: abs(x - self.avg_lat))
-        cdef double lon_at_dev = planet.get_circumference_at_latitude(pes_lat)
-        cdef double difference = fabs(lon_tot_len - lon_at_dev)
+        cdef:
+            double pes_lat = max((coord.lat for coord in coords), key=lambda x: abs(x - self.avg_lat))
+            double lon_at_dev = planet.get_circumference_at_latitude(pes_lat)
+            double difference = fabs(lon_tot_len - lon_at_dev)
+            double diff = fabs(pes_lat - self.avg_lat)
         self.maximum_latitudinal_error_per_degree = difference / 360
-        cdef double diff = fabs(pes_lat - self.avg_lat)
         self.maximum_absolute_error = fabs(diff) * self.maximum_latitudinal_error_per_degree
 
     cpdef XYPoint translate(self, Coordinates x):
