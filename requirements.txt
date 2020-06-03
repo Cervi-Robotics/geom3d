@@ -1,3 +1,3 @@
-satella>=2.7.15
+satella>=2.7.44
 Cython
 snakehouse

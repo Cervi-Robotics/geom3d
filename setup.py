@@ -19,7 +19,7 @@ setup(keywords=['geometry', '3d', 'flight', 'path'],
       packages=['geom3d', 'geom3d.degrees', 'geom3d.paths', 'geom3d.polygons'],
       version='0.8_a3',
       install_requires=[
-            'satella>=2.7.15',
+            'satella>=2.7.44',
       ],
       tests_require=[
           "nose2", "mock", "coverage", "nose2[coverage_plugin]"
