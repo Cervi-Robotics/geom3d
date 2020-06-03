@@ -146,7 +146,10 @@ cdef class Vector:
         return Vector(self.x, self.y, z)
 
     def __str__(self) -> str:
-        return f'<{self.x}, {self.y}, {self.z}>'
+        if iszero(self.z):
+            return f'<{self.x}, {self.y}>'
+        else:
+            return f'<{self.x}, {self.y}, {self.z}>'
 
     def __repr__(self) -> str:
         if iszero(self.z):
