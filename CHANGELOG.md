@@ -4,7 +4,6 @@
   * additionally added unit tests to prevent regressions
 * bugfix in `make_nonintersecting` - `MakeNonintersecting` object
   would be returned if paths were nonintersecting from the start
-* call to gevent idle during long-running operations
 * speed optimizations
 * more elements are now hashable
 

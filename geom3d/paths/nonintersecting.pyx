@@ -7,12 +7,6 @@ from satella.coding.structures import HashableWrapper
 from ..basic cimport Vector
 from .path cimport get_mutual_intersecting
 
-try:
-    from gevent import sleep
-except ImportError:
-    def sleep(x):
-        pass
-
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +45,6 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
     cdef Vector to_lower = Vector(0, 0, -step)
 
     while True:
-        sleep(0)
         indices_to_pull_lower, indices_to_pull_higher = set(), set()
         get_mutual_intersecting(lower.path, higher.path, indices_to_pull_lower, indices_to_pull_higher)
 
@@ -86,7 +79,6 @@ cdef int make_mutually_nonintersecting(MakeNonintersectingPaths a,
 cdef bint are_mutually_nonintersecting(list paths):  # type: (tp.List[MakeNonintersectingPaths])
     cdef MakeNonintersectingPaths path1, path2
     for path1, path2 in half_cartesian(paths, include_same_pairs=False):
-        sleep(0)
         if path1.path.does_collide(path2.path):
             return False
     return True
@@ -118,7 +110,6 @@ cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersecti
 
     while not are_mutually_nonintersecting(paths):
         for elem1, elem2 in half_cartesian(paths, include_same_pairs=False):
-            sleep(0)
             a_higher = elem1 not in paths_lower
             b_higher = elem2 not in paths_lower
 
