@@ -39,14 +39,15 @@ cdef class Polygon2D:
         """
         cdef PointOnPolygon2D point = self.get_point_on_polygon(0.0)
         cdef list points = []
+        cdef Vector candidate_point
         for vector, segment_length in zip(shift(self.points, 1), self.len_segments):
             # so that point occurs on the end of n-th segment
             point.advance(segment_length)
-            points.append(add(vector, mul(point.get_unit_vector_towards_polygon(), step)))
-        cdef Vector point_p
-        for point_p in points:
-            if not point_p in self:
-                raise ValueError('Polygon cannot be shrunk further!')
+            candidate_point = add(vector, mul(point.get_unit_vector_towards_polygon(), step))
+            if candidate_point in self:
+                points.append(candidate_point)
+        if len(points) < 3:
+            raise ValueError('Polygon cannot be shrunk further!')
         points = points[-1:] + points[:-1]  # since the first point was reported last...
         return Polygon2D(points)
 

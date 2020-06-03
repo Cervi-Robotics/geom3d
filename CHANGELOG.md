@@ -6,6 +6,7 @@
   would be returned if paths were nonintersecting from the start
 * major speed optimizations
 * more elements are now hashable
+* improved downscaling of polygons
 
 # v0.6
 
