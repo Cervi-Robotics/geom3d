@@ -5,7 +5,7 @@ from satella.coding.sequences import half_cartesian, even, odd
 from satella.coding.structures import HashableWrapper
 
 from ..basic cimport Vector
-from .path cimport get_mutual_intersecting
+from .path cimport get_mutual_intersecting, get_still_mutual_intersecting
 
 
 logger = logging.getLogger(__name__)
@@ -44,10 +44,11 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
     cdef Vector to_higher = Vector(0, 0, +step)
     cdef Vector to_lower = Vector(0, 0, -step)
 
-    while True:
-        indices_to_pull_lower, indices_to_pull_higher = set(), set()
-        get_mutual_intersecting(lower.path, higher.path, indices_to_pull_lower, indices_to_pull_higher)
+    get_mutual_intersecting(lower.path, higher.path, indices_to_pull_lower, indices_to_pull_higher)
 
+    cdef list ind_lo, ind_hi
+
+    while True:
         if not indices_to_pull_lower:
             # it's sufficient to check only one set
             break
@@ -62,6 +63,13 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
             if higher.path[i].z > higher.maximum_flight:
                 higher.path.points = higher_points_backup
                 raise ValueError('Cannot pull lower than minimum flight')
+
+        ind_lo = list(indices_to_pull_lower)
+        ind_hi = list(indices_to_pull_higher)
+        indices_to_pull_lower = set()
+        indices_to_pull_higher = set()
+        get_still_mutual_intersecting(lower.path, higher.path, indices_to_pull_lower, indices_to_pull_higher, ind_lo, ind_hi)
+
 
     return 0
 

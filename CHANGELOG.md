@@ -4,7 +4,7 @@
   * additionally added unit tests to prevent regressions
 * bugfix in `make_nonintersecting` - `MakeNonintersecting` object
   would be returned if paths were nonintersecting from the start
-* speed optimizations
+* major speed optimizations
 * more elements are now hashable
 
 # v0.6

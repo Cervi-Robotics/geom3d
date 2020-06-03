@@ -23,6 +23,8 @@ cdef class Path:
     cpdef bint does_collide(self, Path other)
     cpdef Path translate_z(self, double delta)
     cpdef void set_z(self, double new_z)
+    cdef Box get_box_at(self, int i)
 
 
 cpdef void get_mutual_intersecting(Path path1, Path path2, set to_path1, set to_path2)
+cpdef void get_still_mutual_intersecting(Path path1, Path path2, set to_path1, set to_path2, list ind_path1, list ind_path2)

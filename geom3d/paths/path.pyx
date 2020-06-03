@@ -173,6 +173,9 @@ cdef class Path:
         else:
             self.points.append(vector)
 
+    cdef Box get_box_at(self, int i):
+        return Box.centered_with_size(self.points[i], self.size)
+
     def __getitem__(self, item):
         return self.points[item]
 
@@ -293,3 +296,16 @@ cpdef void get_mutual_intersecting(Path path1, Path path2, set to_path1, set to_
             if box1.collides(box2):
                 to_path1.add(i)
                 to_path2.add(j)
+
+cpdef void get_still_mutual_intersecting(Path path1, Path path2, set to_path1, set to_path2, list ind_path1, list ind_path2):
+    """
+    Analyze a subset of points previously proved to be collisible
+    """
+    cdef Box box1, box2
+    cdef int i, j
+    for i in ind_path1:
+        for j in ind_path2:
+            if path1.get_box_at(i).collides(path2.get_box_at(j)):
+                to_path1.add(i)
+                to_path2.add(j)
+
