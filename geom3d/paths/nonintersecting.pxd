@@ -13,3 +13,4 @@ cdef class MakeNonintersectingPaths:
 
 
 cpdef list make_nonintersecting(list paths)  # type: (tp.List[tp.Tuple[int, int, Path]]) -> tp.List[Path]
+cpdef bint are_mutually_nonintersecting(list paths)    # type: (tp.List[Path]) -> bool

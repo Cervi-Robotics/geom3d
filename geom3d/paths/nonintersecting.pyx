@@ -37,10 +37,9 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
         int i
         list lower_points_backup = lower.path.points.copy()
         list higher_points_backup = higher.path.points.copy()
+        list ind_lo, ind_hi
 
     get_mutual_intersecting(lower.path, higher.path, indices_to_pull_lower, indices_to_pull_higher)
-
-    cdef list ind_lo, ind_hi
 
     while True:
         if not indices_to_pull_lower:
@@ -62,8 +61,10 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
         ind_hi = list(indices_to_pull_higher)
         indices_to_pull_lower = set()
         indices_to_pull_higher = set()
-        get_still_mutual_intersecting(lower.path, higher.path, indices_to_pull_lower, indices_to_pull_higher, ind_lo, ind_hi)
-
+        get_still_mutual_intersecting(lower.path, higher.path,
+                                      indices_to_pull_lower,
+                                      indices_to_pull_higher,
+                                      ind_lo, ind_hi)
 
     return 0
 
@@ -78,10 +79,14 @@ cdef int make_mutually_nonintersecting(MakeNonintersectingPaths a,
     return make_pair_nonintersecting(a, b, 1.0)
 
 
-cdef bint are_mutually_nonintersecting(list paths):  # type: (tp.List[MakeNonintersectingPaths])
-    cdef MakeNonintersectingPaths path1, path2
+cdef bint _are_mutually_nonintersecting(list paths):  # type: (tp.List[MakeNonintersectingPaths])
+    return are_mutually_nonintersecting([path.path for path in paths])
+
+
+cpdef bint are_mutually_nonintersecting(list paths):
+    cdef Path path1, path2
     for path1, path2 in half_cartesian(paths, include_same_pairs=False):
-        if path1.path.does_collide(path2.path):
+        if path1.does_collide(path2):
             return False
     return True
 
@@ -101,16 +106,15 @@ cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersecti
     :raises ValueError: upon unable to make the paths nonintersecting. 
         This means that your case is non-trivial.
     """
-    cdef list paths_lower = list(even(paths))
+    cdef:
+        list paths_lower = list(even(paths))
+        bint a_higher, b_higher
+        MakeNonintersectingPaths elem1, elem2
 
-    cdef bint a_higher, b_higher
-
-    if are_mutually_nonintersecting(paths):
+    if _are_mutually_nonintersecting(paths):
         return [path.path for path in paths]
 
-    cdef MakeNonintersectingPaths elem1, elem2
-
-    while not are_mutually_nonintersecting(paths):
+    while not _are_mutually_nonintersecting(paths):
         for elem1, elem2 in half_cartesian(paths, include_same_pairs=False):
             a_higher = elem1 not in paths_lower
             b_higher = elem2 not in paths_lower

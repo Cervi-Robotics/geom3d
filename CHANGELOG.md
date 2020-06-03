@@ -7,6 +7,7 @@
 * major speed optimizations
 * more elements are now hashable
 * improved downscaling of polygons
+* added `are_mutually_nonintersecting`
 
 # v0.6
 
