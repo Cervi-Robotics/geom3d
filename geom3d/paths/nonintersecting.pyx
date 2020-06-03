@@ -35,14 +35,14 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
     :param step: a step in Z-axis by which to lower the paths
     :raises ValueError: unable to resolve the path such
     """
-    cdef set indices_to_pull_lower, indices_to_pull_higher
-    cdef int i
-
-    cdef list lower_points_backup = lower.path.points.copy()
-    cdef list higher_points_backup = higher.path.points.copy()
-
-    cdef Vector to_higher = Vector(0, 0, +step)
-    cdef Vector to_lower = Vector(0, 0, -step)
+    cdef:
+        set indices_to_pull_lower = set()
+        set indices_to_pull_higher = set()
+        int i
+        list lower_points_backup = lower.path.points.copy()
+        list higher_points_backup = higher.path.points.copy()
+        Vector to_higher = Vector(0, 0, +step)
+        Vector to_lower = Vector(0, 0, -step)
 
     get_mutual_intersecting(lower.path, higher.path, indices_to_pull_lower, indices_to_pull_higher)
 
