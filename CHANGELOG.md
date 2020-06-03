@@ -1,6 +1,6 @@
 # v0.8
 
-* _TBA_
+* added `are_mutually_nonintersecting` to `geom3d.paths`
 
 # v0.7
 
