@@ -310,6 +310,14 @@ cdef class Path:
 
 
 cpdef void get_mutual_intersecting(Path path1, Path path2, set to_path1, set to_path2):
+    """
+    Get indices of mutually intersecting boxes in two paths.
+    
+    :param path1: first path to analyze
+    :param path2: second path to analyze
+    :param to_path1: set in which indices of boxes in path1 that collide will be placed
+    :param to_path2: set in which indices of boxes in path2 that collide will be placed
+    """
     cdef:
         Box box1, box2
         int i, j
@@ -322,7 +330,14 @@ cpdef void get_mutual_intersecting(Path path1, Path path2, set to_path1, set to_
 
 cpdef void get_still_mutual_intersecting(Path path1, Path path2, set to_path1, set to_path2, list ind_path1, list ind_path2):
     """
-    Analyze a subset of points previously proved to be collisible
+    Analyze a subset of points previously proved to be collisible.
+    
+    :param path1: first path to analyze
+    :param path2: second path to analyze
+    :param to_path1: set in which indices of boxes in path1 that collide will be placed
+    :param to_path2: set in which indices of boxes in path2 that collide will be placed
+    :param ind_path1: indices of boxes in path1 to check
+    :param ind_path2: indices of boxes in path1 to check
     """
     cdef:
         Box box1, box2
