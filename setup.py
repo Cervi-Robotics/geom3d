@@ -12,8 +12,7 @@ ext_modules = build([
       Multibuild('geom3d.paths', find_files('geom3d/paths', r'(.*)\.pyx')),
       Multibuild('geom3d.degrees', find_files('geom3d/degrees', r'(.*)\.pyx')),
 ], compiler_directives={
-      'language_level': '3',
-      'linetrace': True
+      'language_level': '3'
 })
 
 setup(keywords=['geometry', '3d', 'flight', 'path'],
