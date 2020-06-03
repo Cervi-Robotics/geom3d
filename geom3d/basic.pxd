@@ -19,6 +19,7 @@ cdef class Vector:
     cpdef Vector set_y(self, double y)
     cpdef Vector set_z(self, double z)
     cdef bint eq(self, Vector other)
+    cdef int hash(self)
     cpdef Vector add(self, Vector other)
     cpdef Vector sub(self, Vector other)
     cpdef Vector mul(self, double other)
@@ -54,17 +55,23 @@ cdef inline double get_length(Vector self):
 cdef class PointOnLine:
     cdef:
         readonly Line line
-        public double length
+        readonly double length
 
     cpdef Vector to_vector(self)
-    cpdef PointOnLine sub(self, double other)
-    cpdef PointOnLine add(self, double other)
-    cdef double get_relative_position(self)
+    cdef PointOnLine sub(self, double other)
+    cdef PointOnLine add(self, double other)
+    cpdef double get_relative_position(self)
+    cdef eq(self, PointOnLine other)
+    cdef int hash(self)
+
 
 cdef class VectorStartStop:
     cdef:
         readonly Vector start
         readonly Vector stop
+
+    cdef int hash(self)
+    cdef bint eq(self, VectorStartStop other)
 
 
 cdef class Line(VectorStartStop):

@@ -6,6 +6,7 @@
   would be returned if paths were nonintersecting from the start
 * call to gevent idle during long-running operations
 * speed optimizations
+* more elements are now hashable
 
 # v0.6
 

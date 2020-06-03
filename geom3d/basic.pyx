@@ -40,8 +40,11 @@ cdef class Vector:
                       self.z * other.x - self.x * other.z,
                       self.x * other.y - self.y * other.x)
 
-    def __hash__(self) -> int:
+    cdef int hash(self):
         return hash(self.x) ^ hash(self.y) ^ hash(self.z)
+
+    def __hash__(self) -> int:
+        return self.hash()
 
     cpdef double dot_product(self, Vector other):
         """Calculate the dot product between this vector and the other"""
@@ -192,7 +195,7 @@ cdef class Vector:
     # Copying immmutable objects
     def __copy__(self):
         return self
-    
+
     def __deepcopy__(self, memo):
         return self
 
@@ -201,9 +204,23 @@ cdef class PointOnLine:
     """
     This class serves to compute points that lie a certain distance from the start, but still
     lie on this line.
+
+    Immutable.
     """
 
-    cdef double get_relative_position(self):
+    def __eq__(self, other: VectorStartStop) -> bool:
+        return self.eq(other)
+
+    def __hash__(self) -> int:
+        return self.hash()
+
+    cdef int hash(self):
+        return hash(self.length) ^ self.line.hash()
+
+    cdef eq(self, PointOnLine other):
+        return isclose(self.length, other.length) and self.line.eq(other.line)
+
+    cpdef double get_relative_position(self):
         """Get a position 0 >= x >= 1"""
         return self.length / len(self.line.length)
 
@@ -211,32 +228,46 @@ cdef class PointOnLine:
         self.line = line
         self.length = distance_from_start % self.line.length
 
-    cpdef PointOnLine add(self, double other):
-        return PointOnLine(self.line, self.length + other)
+    cdef PointOnLine add(self, double other):
+        return PointOnLine(self.line, (self.length + other) % self.line.length)
 
     def __add__(self, other: float) -> PointOnLine:
         return self.add(other)
 
-    cpdef PointOnLine sub(self, double other):
-        return PointOnLine(self.line, self.length - other)
+    cdef PointOnLine sub(self, double other):
+        return PointOnLine(self.line, (self.length - other) % self.line.length)
 
     def __sub__(self, other: float) -> PointOnLine:
         return self.sub(other)
 
     cpdef Vector to_vector(self):
         """Return the physical point given PointOnLine corresponds to"""
-        return self.line.start.add(self.line.unit_vector.mul(self.length))
+        return add(self.line.start, mul(self.line.unit_vector, self.length))
+
+    # Copying immmutable objects
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, memo):
+        return self
+
 
 cdef class VectorStartStop:
     """
-    A class having a start and a stop
+    A class having a start and a stop.
     """
     def __init__(self, start: Vector, stop: Vector):
         self.start = start
         self.stop = stop
 
     def __hash__(self):
-        return hash(self.start) ^ hash(self.stop)
+        return self.hash()
+
+    cdef int hash(self):
+        return self.start.hash() ^ self.stop.hash()
+
+    cdef bint eq(self, VectorStartStop other):
+        return self.start.eq(other.start) and self.stop.eq(other.stop)
 
     def __eq__(self, other: VectorStartStop) -> bool:
         return self.start.eq(other.start) and self.stop.eq(other.stop)
@@ -247,7 +278,7 @@ cdef class VectorStartStop:
     def __copy__(self):
         return self.copy()
 
-    def __deepcopy__(self, memo={}):
+    def __deepcopy__(self, memo):
         return self.copy()
 
     def __str__(self) -> str:
