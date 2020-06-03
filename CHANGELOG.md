@@ -1,6 +1,6 @@
 # v0.9
 
-* _TBA_
+* added eq-ability and hashability to `Ray`
 
 # v0.8
 

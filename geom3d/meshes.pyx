@@ -14,6 +14,12 @@ cdef class Ray:
         self.unit_vector = unit_vector
         assert isclose(unit_vector.length, 1), 'Unit vector has to be of length 1'
 
+    def __eq__(self, other: Ray) -> bool:
+        return self.start.eq(other.start) and self.unit_vector.eq(other.unit_vector)
+
+    def __hash__(self) -> int:
+        return self.start.hash() ^ self.unit_vector.hash()
+
     cpdef bint collides(self, Triangle triangle):
         cdef:
             Vector u, v, n, w0, w
