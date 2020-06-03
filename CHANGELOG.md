@@ -2,6 +2,7 @@
 
 * added `are_mutually_nonintersecting` to `geom3d.paths`
 * bump satella
+* add `avg` to utils
 
 # v0.7
 
