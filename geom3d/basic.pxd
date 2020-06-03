@@ -18,6 +18,8 @@ cdef class Vector:
     cpdef Vector set_x(self, double x)
     cpdef Vector set_y(self, double y)
     cpdef Vector set_z(self, double z)
+    cpdef Vector delta_x(self, double delta_x)
+    cpdef Vector delta_y(self, double delta_y)
     cpdef Vector delta_z(self, double delta_z)
     cdef bint eq(self, Vector other)
     cdef int hash(self)

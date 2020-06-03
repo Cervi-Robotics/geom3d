@@ -128,6 +128,12 @@ cdef class Vector:
         """Return self, but with x set to a target value"""
         return Vector(x, self.y, self.z)
 
+    cpdef Vector delta_y(self, double delta_y):
+        return Vector(self.x, self.y + delta_y, self.z)
+
+    cpdef Vector delta_x(self, double delta_x):
+        return Vector(self.x + delta_x, self.y, self.z)
+
     cpdef Vector delta_z(self, double delta_z):
         return Vector(self.x, self.y, self.z + delta_z)
 
