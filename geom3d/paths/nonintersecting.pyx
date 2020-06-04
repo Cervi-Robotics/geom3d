@@ -137,7 +137,7 @@ cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersecti
         return [path.path for path in paths]
     are_mutual_nonintersection = False
 
-    while not are_mutual_nonintersec:
+    while not are_mutual_nonintersection:
         for elem1, elem2 in half_cartesian(paths, include_same_pairs=False):
 
             if _are_mutually_nonintersecting([elem1, elem2]):

@@ -123,6 +123,10 @@ cdef class Path:
 
         return 0
 
+    @property
+    def length(self) -> float:
+        return self.get_length()
+
     cpdef Vector get_vector_at(self, double length):
         """
         Get a vector that would appear at length from the start.

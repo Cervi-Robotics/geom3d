@@ -26,4 +26,5 @@ class TestNonintersecting(unittest.TestCase):
         path2.set_z(50)
         make_nonintersecting([MakeNonintersectingPaths(0, 100, path1),
                               MakeNonintersectingPaths(0, 100, path2)])
+        self.assertGreater(path2.length, 400)
         self.assertTrue(are_mutually_nonintersecting([path1, path2]))
