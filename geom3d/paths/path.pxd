@@ -16,6 +16,7 @@ cdef class Path:
     cpdef int head_towards(self, Vector point, double delta) except -1     # type: (Vector, float) -> None
     cpdef int advance(self, Vector delta) except -1        # type: (Vector) -> None
     cpdef Path copy(self)
+    cdef Vector get_head(self)
     cpdef Path simplify(self)
     cpdef list get_intersecting_boxes_indices(self, Path other)
     cpdef Vector get_vector_at(self, double length)

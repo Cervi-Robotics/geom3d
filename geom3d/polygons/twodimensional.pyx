@@ -40,18 +40,21 @@ cdef class Polygon2D:
         cdef:
             PointOnPolygon2D point = self.get_point_on_polygon(0.0)
             list points = []
-            Vector candidate_point
+            Vector candidate_point, vector_ending_at
+            double segment_length
+            Polygon2D result
 
-        for vector, segment_length in zip(shift(self.points, 1), self.len_segments):
+        for vector_ending_at, segment_length in zip(shift(self.points, 1), self.len_segments):
             # so that point occurs on the end of n-th segment
             point.advance(segment_length)
-            candidate_point = add(vector, mul(point.get_unit_vector_towards_polygon(), step))
-            if candidate_point in self:
+            candidate_point = add(vector_ending_at, mul(point.get_unit_vector_towards_polygon(), step))
+            if self.contains(candidate_point):
                 points.append(candidate_point)
         if len(points) < 3:
             raise ValueError('Polygon cannot be shrunk further!')
         points = points[-1:] + points[:-1]  # since the first point was reported last...
-        return Polygon2D(points)
+        result = Polygon2D(points)
+        return result
 
     def iter_lengths(self) -> tp.Iterator[float]:
         """
@@ -165,25 +168,23 @@ cdef class Polygon2D:
             double min_x = self.points[0].x
             double max_y = self.points[0].y
             double min_y = self.points[0].y
-            Vector point
+            Vector point, next_point, prev_point
+            bint inside = False
 
         for point in self.points[1:]:
+
             if point.x < min_x:
                 min_x = point.x
-            if point.x > max_x:
+            elif point.x > max_x:
                 max_x = point.x
+
             if point.y < min_y:
                 min_y = point.y
-            if point.y > max_y:
+            elif point.y > max_y:
                 max_y = point.y
 
         if (p.x < min_x) or (p.x > max_x) or (p.y < min_y) or (p.y > max_y):
             return False
-
-        cdef:
-            bint inside = False
-            Vector next_point
-            Vector prev_point
 
         for next_point, prev_point in add_next(self, wrap_over=True):
             if (next_point.y > p.y) != (prev_point.y > p.y) and p.x < (
@@ -327,7 +328,7 @@ cdef class PointOnPolygon2D:
         :param v: amount to move the pointer along the perimeter, or a negative value to move
             it backwards.
         """
-        self._distance_from_start = self._distance_from_start + v
+        self._distance_from_start = true_modulo(self._distance_from_start + v, self.polygon.total_perimeter_length)
 
     cpdef Vector to_vector(self):
         """
@@ -373,7 +374,7 @@ cdef class PointOnPolygon2D:
             prev = self.polygon.get_previous_segment(segment)
             unit_vec = segment.unit_vector
             prev_unit_vec = prev.unit_vector
-            common_vec = unit_vec.add(prev_unit_vec).unitize()
+            common_vec = add(unit_vec, prev_unit_vec).unitize()
         else:
             common_vec = segment.unit_vector
 
@@ -390,6 +391,9 @@ cdef class PointOnPolygon2D:
                 return -point
             epsilon *= 0.1
             point2 = mul(point2, 0.1)
+            if epsilon < 1E-18:
+                raise ValueError('Could not determine, the polygon was too small')
+
 
     cpdef Vector get_unit_vector_away_polygon(self):
         """

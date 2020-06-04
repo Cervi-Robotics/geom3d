@@ -1,11 +1,6 @@
-import logging
 import typing as tp
 
-from libc.math cimport fabs
-
 from .base cimport iszero, isclose
-
-logger = logging.getLogger(__name__)
 
 __all__ = ['Vector', 'Box', 'Line', 'PointOnLine']
 

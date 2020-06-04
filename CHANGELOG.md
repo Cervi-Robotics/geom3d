@@ -1,6 +1,8 @@
 # v0.9
 
 * added eq-ability and hashability to `Ray`
+* reworked `make_nonintersecting` to be much faster
+* added a comprehensive test for `make_nonintersecting`
 
 # v0.8
 

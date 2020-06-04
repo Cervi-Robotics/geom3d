@@ -44,14 +44,12 @@ cdef tuple make_two_blocks_nonintersecting(Box lower, Box higher):  # type: () -
 
 
 cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
-                                   MakeNonintersectingPaths higher,
-                                   double step) except -1:
+                                   MakeNonintersectingPaths higher) except -1:
     """
     Make a pair of paths nonintersecting
      
     :param lower: path to pull lower on the Z-axis
     :param higher: path to pull higher on the Z-axis
-    :param step: a step in Z-axis by which to lower the paths
     :raises ValueError: unable to resolve the path such
     """
     cdef:
@@ -65,10 +63,7 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
 
     get_mutual_intersecting(lower.path, higher.path, indices_to_pull_lower, indices_to_pull_higher)
 
-    while True:
-        if not indices_to_pull_lower:
-            # it's sufficient to check only one set
-            break
+    while indices_to_pull_lower:
 
         for indic_lo, indic_hi in get_mutually_intersecting(lower.path, higher.path):
             box1, box2 = make_two_blocks_nonintersecting(lower.path.get_box_at(indic_lo),
@@ -97,13 +92,12 @@ cdef int make_pair_nonintersecting(MakeNonintersectingPaths lower,
 
 cdef int make_mutually_nonintersecting(MakeNonintersectingPaths a,
                                        MakeNonintersectingPaths b,
-                                       bint swap,
-                                       double vertical_delta) except -1:
+                                       bint swap) except -1:
     if a.get_ceiling_down() < a.get_ceiling_up():
         a, b = b, a
     if swap:
         a, b = b, a
-    return make_pair_nonintersecting(a, b, vertical_delta)
+    return make_pair_nonintersecting(a, b)
 
 
 cdef bint _are_mutually_nonintersecting(list paths):  # type: (tp.List[MakeNonintersectingPaths])
@@ -118,8 +112,7 @@ cpdef bint are_mutually_nonintersecting(list paths):
     return True
 
 
-cpdef list make_nonintersecting(list paths,
-                                double vertical_delta):  # type: (tp.List[MakeNonintersectingPaths]) -> tp.List[Path]
+cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersectingPaths]) -> tp.List[Path]
     """
     Make the paths non-intersecting.
     
@@ -138,28 +131,35 @@ cpdef list make_nonintersecting(list paths,
         list paths_lower = list(even(paths))
         bint a_higher, b_higher
         MakeNonintersectingPaths elem1, elem2
+        bint are_mutual_nonintersection
 
     if _are_mutually_nonintersecting(paths):
         return [path.path for path in paths]
+    are_mutual_nonintersection = False
 
-    while not _are_mutually_nonintersecting(paths):
+    while not are_mutual_nonintersec:
         for elem1, elem2 in half_cartesian(paths, include_same_pairs=False):
+
+            if _are_mutually_nonintersecting([elem1, elem2]):
+                continue
             a_higher = elem1 not in paths_lower
             b_higher = elem2 not in paths_lower
 
             try:
                 if a_higher == b_higher:
-                    make_mutually_nonintersecting(elem1, elem2, False, vertical_delta)
+                    make_mutually_nonintersecting(elem1, elem2, False)
                 elif a_higher:
-                    make_pair_nonintersecting(elem1, elem2, vertical_delta)
+                    make_pair_nonintersecting(elem1, elem2)
                 else:
-                    make_pair_nonintersecting(elem2, elem1, vertical_delta)
+                    make_pair_nonintersecting(elem2, elem1)
             except ValueError:
                 if a_higher == b_higher:
-                    make_mutually_nonintersecting(elem1, elem2, True, vertical_delta)
+                    make_mutually_nonintersecting(elem1, elem2, True)
                 elif a_higher:
-                    make_pair_nonintersecting(elem2, elem1, vertical_delta)
+                    make_pair_nonintersecting(elem2, elem1)
                 else:
-                    make_pair_nonintersecting(elem1, elem2, vertical_delta)
+                    make_pair_nonintersecting(elem1, elem2)
+
+        are_mutual_nonintersection = _are_mutually_nonintersecting(paths)
 
     return [path.path for path in paths]

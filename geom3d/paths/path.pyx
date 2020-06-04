@@ -1,6 +1,5 @@
 import itertools
 import typing as tp
-import logging
 import warnings
 from copy import copy
 from satella.coding.sequences import add_next, count
@@ -8,8 +7,6 @@ from satella.coding.sequences import add_next, count
 from ..base cimport iszero, isclose
 from ..basic cimport Box, Vector, Line
 from ..exceptions import ValueWarning, NotReadyError
-
-logger = logging.getLogger(__name__)
 
 
 cdef class Path:
@@ -57,12 +54,15 @@ cdef class Path:
 
         return Path(size, points)
 
-    @property
-    def head(self) -> Vector:
+    cdef Vector get_head(self):
         try:
             return self.points[-1]
         except IndexError:
-            raise NotReadyError('Path must contain at least one element')
+            raise NotReadyError('Path must contain at least one element!')
+
+    @property
+    def head(self) -> Vector:
+        return self.get_head()
 
     cpdef void set_size(self, Vector value):
         self.size = value
@@ -111,12 +111,13 @@ cdef class Path:
         :param point: point to advance towards
         :param delta: size of step to use in constructing the path
         """
+        cdef Vector vector_towards
         if iszero((point.sub(self.head)).length):
             return 0
 
-        while point != self.head:
+        while not point.eq(self.head):
             vector_towards = point.sub(self.head)
-            if vector_towards.length < delta:
+            if vector_towards.get_length() < delta:
                 return self.advance(vector_towards)
             self.advance(vector_towards.unitize().mul(delta))
 
