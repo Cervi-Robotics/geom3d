@@ -80,6 +80,10 @@ cdef class Polygon2D:
         return Path(size, [point for point in self.get_points_along(step, include_last_point=True)])
 
     def __init__(self, points: tp.List[Vector]):
+        cdef:
+            Vector p1, p2
+            Line x
+
         if len(points) < 2:
             raise ValueError('At least 3 vertices are needed to construct a polygon')
 
@@ -113,6 +117,8 @@ cdef class Polygon2D:
 
         :return: an iterator, yielding subsequent segments of this polygon
         """
+        cdef Vector point1, point2
+
         for point1, point2 in add_next(self.points, wrap_over=True):
             yield Line(point1, point2)
 
@@ -155,7 +161,8 @@ cdef class Polygon2D:
         :param offset: length from start from where to start counting. The next vertex specified
         will come in first. If the offset is directly on a vertex, this vertex will be returned.
         """
-        first_segment = self.get_segment_at_distance(offset)
+        cdef Line first_segment = self.get_segment_at_distance(offset)
+
         return shift(self.points, self.segments.index(first_segment))
 
     def __iter__(self) -> tp.Iterator[Vector]:

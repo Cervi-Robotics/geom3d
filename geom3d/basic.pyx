@@ -294,6 +294,7 @@ cdef class VectorStartStop:
     def __repr__(self) -> str:
         return f'{self.__class__}({self.start}, {self.stop})'
 
+
 cdef class Line(VectorStartStop):
     """
     A segment in 3D. It starts somewhere and ends somewhere.

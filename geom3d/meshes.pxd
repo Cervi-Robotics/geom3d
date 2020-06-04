@@ -8,6 +8,9 @@ cdef class Ray:
         readonly Vector unit_vector
 
     cpdef bint collides(self, Triangle triangle)
+    cdef int hash(self)
+    cdef bint eq(self, Ray other)
+
 
 cdef class Triangle:
     cdef:
@@ -21,6 +24,8 @@ cdef class Triangle:
     cpdef tuple get_edges(self)  # type: () -> tp.Tuple[Line, Line, Line]
     cpdef Vector get_normal(self)
     cpdef double get_signed_area(self)
+    cdef int hash(self)
+    cdef bint eq(self, Triangle other)
 
 
 cdef class Mesh:

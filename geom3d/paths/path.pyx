@@ -69,7 +69,9 @@ cdef class Path:
 
     cpdef Path simplify(self):
         """
-        Return this path, but with points that are colinear to adjacent points removed
+        Return this path, but with points that are colinear to adjacent points removed.
+        
+        Does not modify this path.
         """
         cdef:
             Line line

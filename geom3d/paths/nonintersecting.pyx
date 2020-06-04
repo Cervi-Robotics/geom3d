@@ -116,6 +116,8 @@ cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersecti
     """
     Make the paths non-intersecting.
     
+    This will not modify the argument.
+
     The preferred z-value will be the first path's first point z value.
 
     This will be done by adjusting their z-value in place.
@@ -124,9 +126,12 @@ cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersecti
     
     Return will be a list of paths, adjusted so that they are mutually nonintersecting
     
+    :param paths: list of MakeNonintersectingPaths, paths to make mutually nonintersecting
+    
     :raises ValueError: upon unable to make the paths nonintersecting. 
         This means that your case is non-trivial.
     """
+    paths = [path.copy() for path in paths]
     cdef:
         list paths_lower = list(even(paths))
         bint a_higher, b_higher
@@ -139,7 +144,6 @@ cpdef list make_nonintersecting(list paths):  # type: (tp.List[MakeNonintersecti
 
     while not are_mutual_nonintersection:
         for elem1, elem2 in half_cartesian(paths, include_same_pairs=False):
-
             if _are_mutually_nonintersecting([elem1, elem2]):
                 continue
             a_higher = elem1 not in paths_lower

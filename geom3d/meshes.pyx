@@ -15,10 +15,16 @@ cdef class Ray:
         assert isclose(unit_vector.length, 1), 'Unit vector has to be of length 1'
 
     def __eq__(self, other: Ray) -> bool:
-        return self.start.eq(other.start) and self.unit_vector.eq(other.unit_vector)
+        return self.eq(other)
 
     def __hash__(self) -> int:
+        return self.hash()
+
+    cdef int hash(self):
         return self.start.hash() ^ self.unit_vector.hash()
+
+    cdef bint eq(self, Ray other):
+        return self.start.eq(other.start) and self.unit_vector.eq(other.unit_vector)
 
     cpdef bint collides(self, Triangle triangle):
         cdef:
@@ -65,12 +71,26 @@ cdef class Ray:
 
 cdef class Triangle:
     """
-    A triangle defined by it's 3 vertices
+    A triangle defined by it's 3 vertices.
+
+    Immutable and hashable.
     """
     def __init__(self, a: Vector, b: Vector, c: Vector):
         self.a = a
         self.b = b
         self.c = c
+
+    cdef bint eq(self, Triangle other):
+        return self.a.eq(other.a) and self.b.eq(other.b) and self.c.eq(other.c)
+
+    def __eq__(self, other: Triangle):
+        return self.eq(other)
+
+    def __hash__(self) -> int:
+        return self.hash()
+
+    cdef int hash(self):
+        return self.a.hash() ^ self.b.hash() ^ self.c.hash()
 
     cpdef double get_perimeter_length(self):
         """Return the length of triangle's perimeter"""
@@ -89,11 +109,9 @@ cdef class Triangle:
 
     cpdef double get_surface_area(self):
         """Return the surface area of this triangle"""
-        cdef:
-            double s
-            double a, b, c
-        s = self.get_perimeter_length()
+        cdef double a, b, c, s
         a, b, c = self.get_edges_length()
+        s = (a+b+c) / 2
         return sqrt(s * (s - a) * (s - b) * (s - c))
 
     cpdef double get_signed_area(self):
@@ -139,6 +157,6 @@ cdef class Mesh:
             Triangle triangle
 
         for triangle in self.triangles:
-            tot_sum = triangle.get_signed_area()
+            tot_sum += triangle.get_signed_area()
 
         return tot_sum
