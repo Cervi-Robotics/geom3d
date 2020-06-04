@@ -198,6 +198,9 @@ cdef class Path:
         for point in self.points:
             yield Box.centered_with_size(point, self.size)
 
+    cdef void set_box_at(self, int i, Box box):
+        self.points[i] = box.get_center()
+
     cpdef int append(self, object elem) except -1:  # type: (tp.Union[Vector, Box]) -> None
         cdef:
             Box box
@@ -307,6 +310,20 @@ cdef class Path:
 
     def __eq__(self, other: Path):
         return self.eq(other)
+
+
+def get_mutually_intersecting(path1: Path, path2: Path) -> tp.Iterator[tp.Tuple[int, int]]:
+    """
+    Return an iterator listing all indices of blocks in both paths that intersect each other.
+
+    First element of return will be from path1, the second one from path2
+    """
+    cdef Box box1, box2
+    cdef int i, j
+    for i, box1 in enumerate(path1):
+        for j, box2 in enumerate(path2):
+            if box1.collides(box2):
+                yield i, j
 
 
 cpdef void get_mutual_intersecting(Path path1, Path path2, set to_path1, set to_path2):

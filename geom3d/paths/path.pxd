@@ -24,6 +24,7 @@ cdef class Path:
     cpdef Path translate_z(self, double delta)
     cpdef void set_z(self, double new_z)
     cdef Box get_box_at(self, int i)
+    cdef void set_box_at(self, int i, Box box)
     cdef bint eq(self, Path other)
 
 
