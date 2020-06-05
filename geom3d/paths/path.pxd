@@ -7,6 +7,7 @@ cdef class Path:
         public Vector size
         public list points
 
+    cpdef Path add(self, Path other)
     cpdef double avg_z(self)
     cpdef Path reverse(self)
     cpdef void set_size(self, Vector value)

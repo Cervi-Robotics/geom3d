@@ -16,6 +16,9 @@ cdef class Path:
         self.size = size
 
     def __add__(self, other: Path):
+        return self.add(other)
+
+    cpdef Path add(self, Path other):
         return Path(self.size, self.points + other.points)
 
     cpdef Path reverse(self):

@@ -3,6 +3,7 @@
 * added eq-ability and hashability to `Ray`
 * reworked `make_nonintersecting` to be much faster
 * added a comprehensive test for `make_nonintersecting`
+* added `add` to `Path`
 
 # v0.8
 
