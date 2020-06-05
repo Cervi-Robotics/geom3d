@@ -24,8 +24,8 @@ class TestNonintersecting(unittest.TestCase):
         path1.set_z(50)
         path2 = cover_polygon2d_with_path(poly2, Vector(5, 5, 5), 10, 0.3, 0)
         path2.set_z(50)
-        make_nonintersecting([MakeNonintersectingPaths(0, 100, path1),
-                              MakeNonintersectingPaths(0, 100, path2)])
+        path1, path2 = make_nonintersecting([MakeNonintersectingPaths(0, 100, path1),
+                                            MakeNonintersectingPaths(0, 100, path2)])
         self.assertGreater(path2.length, 400)
         self.assertTrue(are_mutually_nonintersecting([path1, path2]))
         path1.simplify()

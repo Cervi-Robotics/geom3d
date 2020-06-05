@@ -29,6 +29,15 @@ cdef class MakeNonintersectingPaths:
     def __eq__(self, other: MakeNonintersectingPaths):
         return self.eq(other)
 
+    cpdef MakeNonintersectingPaths copy(self):
+        return MakeNonintersectingPaths(self.minimum_flight, self.maximum_flight, self.path.copy())
+
+    def __copy__(self):
+        return self.copy()
+
+    def __deepcopy__(self, memo):
+        return self.copy()
+
 
 cdef tuple make_two_blocks_nonintersecting(Box lower, Box higher):  # type: () -> tp.Tuple[Box, Box]
     cdef:

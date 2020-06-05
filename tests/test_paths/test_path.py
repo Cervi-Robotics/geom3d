@@ -54,7 +54,7 @@ class TestPath(unittest.TestCase):
 
         m1 = MakeNonintersectingPaths(-5, 10, p1)
         m2 = MakeNonintersectingPaths(-5, 10, p2)
-        make_nonintersecting([m1, m2])
+        p1, p2, = make_nonintersecting([m1, m2])
         self.assertFalse(p1.does_collide(p2))
 
     def test_length(self):

@@ -10,6 +10,8 @@
 * bump satella
 * add `avg` to utils
 * added `vertical_delta` to `make_mutually_nonintersecting`
+* `make_mutually_nonintersecting` will copy it's arguments
+  before processing
 
 # v0.7
 
