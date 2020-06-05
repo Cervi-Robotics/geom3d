@@ -1,7 +1,4 @@
-import logging
 import unittest
-
-logger = logging.getLogger(__name__)
 
 from geom3d import Vector, Box, Line
 
