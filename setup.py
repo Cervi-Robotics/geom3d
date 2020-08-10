@@ -18,9 +18,9 @@ ext_modules = build([
 
 setup(keywords=['geometry', '3d', 'flight', 'path'],
       packages=['geom3d', 'geom3d.degrees', 'geom3d.paths', 'geom3d.polygons'],
-      version='0.9',       # last released: v0.9
+      version='0.10_a1',       # last released: v0.9
       install_requires=[
-            'satella>=2.7.46',
+            'satella>=2.9.17`',
       ],
       tests_require=[
           "nose2", "mock", "coverage", "nose2[coverage_plugin]"
