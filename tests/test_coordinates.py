@@ -1,3 +1,4 @@
+import geom3d.degrees
 import unittest
 from geom3d.degrees import XYPointCollection, Coordinates
 
