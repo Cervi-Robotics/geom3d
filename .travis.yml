@@ -1,7 +1,9 @@
+language: python
 stages:
   - name: test
   - name: deploy
-    if: branch = master
+    if: tag is present
+
 language: python
 jobs:
   include:

@@ -4,6 +4,8 @@
 * reworked `make_nonintersecting` to be much faster
 * added a comprehensive test for `make_nonintersecting`
 * added `add` to `Path`
+* added `to_json` and `from_json` to Coordinates
+* switched deploy to CI only for tagged releases
 
 # v0.8
 

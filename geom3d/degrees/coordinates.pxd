@@ -33,6 +33,7 @@ cdef class Coordinates:
     cpdef XYPoint to_xy_point(self, Planet planet= *)
     cdef bint eq(self, Coordinates other)
     cdef int hash(self)
+    cpdef dict to_json(self)
 
 
 cdef class XYPointCollection:

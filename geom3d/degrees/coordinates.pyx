@@ -1,4 +1,3 @@
-import collections.abc
 import typing as tp
 
 from geom3d.basic cimport Vector
@@ -110,6 +109,16 @@ cdef class Coordinates:
     def __init__(self, lat: float, lon: float):
         self.lat = lat
         self.lon = lon
+
+    cpdef dict to_json(self):
+        return {
+            'latitude': self.lat,
+            'longitude': self.lon
+        }
+
+    @classmethod
+    def from_json(cls, dict x) -> Coordinates:
+        return Coordinates(x['latitude'], x['longitude'])
 
     cpdef XYPoint to_xy_point(self, Planet planet = Earth()):
         """
