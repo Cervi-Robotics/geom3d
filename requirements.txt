@@ -1,2 +1,2 @@
 satella>=2.7.46
-snakehouse
+snakehouse==1.1.2
